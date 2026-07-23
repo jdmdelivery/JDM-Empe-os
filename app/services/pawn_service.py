@@ -263,6 +263,9 @@ def register_payment(
             )
 
     receipt = next_code("REC", _last_receipt_number())
+    resolved_payer = (payer_name or "").strip() or (
+        contract.customer.full_name if contract.customer else None
+    )
     payment = PawnPayment(
         receipt_number=receipt,
         idempotency_key=key,
@@ -271,7 +274,7 @@ def register_payment(
         method=method,
         previous_balance=previous,
         new_balance=new_balance,
-        payer_name=payer_name,
+        payer_name=resolved_payer,
         notes=notes,
         contract_id=contract.id,
         customer_id=contract.customer_id,

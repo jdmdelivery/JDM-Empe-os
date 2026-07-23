@@ -62,7 +62,8 @@ def create():
                 amount=to_decimal(form.amount.data),
                 method=form.method.data,
                 payment_type=form.payment_type.data,
-                payer_name=form.payer_name.data,
+                payer_name=(form.payer_name.data or "").strip()
+                or (contract.customer.full_name if contract.customer else None),
                 notes=form.notes.data,
                 idempotency_key=form.idempotency_key.data or secrets.token_hex(12),
                 user_id=current_user.id,
