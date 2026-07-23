@@ -18,8 +18,14 @@ from app.models import (
 from app.services.cash_service import get_open_session, session_balance
 from app.services.pawn_service import update_expiration_statuses
 from app.utils.decorators import permission_required
-from app.utils.datetime_utils import local_now
+from app.utils.datetime_utils import ensure_aware, local_now
 from app.utils.money import ZERO, format_money, to_decimal
+
+
+def _is_local_today(dt) -> bool:
+    """Compara fechas en zona America/Santo_Domingo (no UTC crudo)."""
+    local_dt = ensure_aware(dt)
+    return bool(local_dt and local_dt.date() == local_now().date())
 
 
 @dashboard_bp.route("/")
@@ -40,17 +46,18 @@ def index():
         (to_decimal(c.capital) for c in contracts_today if c.start_date == today),
         ZERO,
     )
+    payments_q = PawnPayment.query.filter_by(is_voided=False)
+    if hasattr(PawnPayment, "is_deleted"):
+        payments_q = payments_q.filter_by(is_deleted=False)
     payments_today = [
-        p
-        for p in scope(PawnPayment.query.filter_by(is_voided=False), PawnPayment).all()
-        if p.paid_at and p.paid_at.date() == today
+        p for p in scope(payments_q, PawnPayment).all() if _is_local_today(p.paid_at)
     ]
     interest_today = sum((to_decimal(p.amount) for p in payments_today), ZERO)
     sales_today = sum(
         (
             to_decimal(s.total)
             for s in scope(Sale.query.filter_by(is_deleted=False), Sale).all()
-            if s.sold_at and s.sold_at.date() == today
+            if _is_local_today(s.sold_at)
         ),
         ZERO,
     )
@@ -58,7 +65,7 @@ def index():
         (
             to_decimal(p.paid_price)
             for p in scope(DirectPurchase.query.filter_by(is_deleted=False), DirectPurchase).all()
-            if p.purchased_at and p.purchased_at.date() == today
+            if _is_local_today(p.purchased_at)
         ),
         ZERO,
     )
