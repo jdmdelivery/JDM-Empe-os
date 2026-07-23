@@ -1016,3 +1016,16 @@ textarea {
   background: rgba(48, 209, 88, 0.32) !important;
   color: #fff !important;
 }
+
+a.kpi-link {
+  display: block;
+  text-decoration: none !important;
+  color: inherit !important;
+  cursor: pointer;
+}
+a.kpi-link:hover {
+  border-color: rgba(250, 204, 21, 0.55);
+}
+a.kpi-link:active {
+  transform: scale(0.985);
+}

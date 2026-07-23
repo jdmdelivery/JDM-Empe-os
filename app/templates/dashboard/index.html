@@ -39,6 +39,16 @@
   <div class="row g-3">
     {% for card in cards %}
     <div class="col-12 col-sm-6 col-lg-4">
+      {% if card.url %}
+      <a class="card-jdm kpi-card kpi-link tone-{{ card.tone }}" href="{{ card.url }}">
+        <div class="kpi-top">
+          <span class="kpi-label">{{ card.title }}</span>
+          <span class="kpi-dot" aria-hidden="true"></span>
+        </div>
+        <div class="kpi-value">{{ card.value }}</div>
+        <div class="kpi-hint">{{ card.hint }} · tocar para abrir</div>
+      </a>
+      {% else %}
       <div class="card-jdm kpi-card tone-{{ card.tone }}">
         <div class="kpi-top">
           <span class="kpi-label">{{ card.title }}</span>
@@ -47,6 +57,7 @@
         <div class="kpi-value">{{ card.value }}</div>
         <div class="kpi-hint">{{ card.hint }}</div>
       </div>
+      {% endif %}
     </div>
     {% endfor %}
   </div>

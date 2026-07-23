@@ -1,6 +1,6 @@
 """Rutas del dashboard."""
 
-from flask import render_template, request
+from flask import render_template, request, url_for
 from flask_login import current_user, login_required
 
 from app.dashboard import dashboard_bp
@@ -96,19 +96,95 @@ def index():
         if session:
             cash_value = session_balance(session)
 
+    from flask import url_for
+
+    from flask import url_for
+
     cards = [
-        {"title": "Capital prestado hoy", "value": format_money(capital_today), "hint": "Empeños del día", "tone": "primary"},
-        {"title": "Cobrado hoy", "value": format_money(interest_today), "hint": "Pagos recibidos", "tone": "success"},
-        {"title": "Ventas de hoy", "value": format_money(sales_today), "hint": "Facturación", "tone": "info"},
-        {"title": "Compras de hoy", "value": format_money(purchases_today), "hint": "Compras directas", "tone": "warning"},
-        {"title": "Caja disponible", "value": format_money(cash_value), "hint": "Sesión abierta", "tone": "gold"},
-        {"title": "Contratos activos", "value": str(active_contracts), "hint": "En vigor", "tone": "primary"},
-        {"title": "Vencidos / gracia", "value": str(expired_count), "hint": "Requieren atención", "tone": "warning"},
-        {"title": "Disponibles venta", "value": str(available_items), "hint": "Inventario", "tone": "secondary"},
-        {"title": "Clientes", "value": str(Customer.query.filter_by(is_deleted=False).count()), "hint": "Base", "tone": "secondary"},
-        {"title": "Sucursales", "value": str(Branch.query.filter_by(is_deleted=False, is_active=True).count()), "hint": "Red", "tone": "secondary"},
-        {"title": "Usuarios", "value": str(User.query.filter_by(is_deleted=False, account_active=True).count()), "hint": "Equipo", "tone": "secondary"},
-        {"title": "Ganancia hoy (est.)", "value": format_money(interest_today + sales_today - purchases_today), "hint": "Estimación operativa", "tone": "success"},
+        {
+            "title": "Capital prestado hoy",
+            "value": format_money(capital_today),
+            "hint": "Empeños del día",
+            "tone": "primary",
+            "url": url_for("pawn.index") if current_user.has_any_permission("pawn.view", "pawn.manage") else None,
+        },
+        {
+            "title": "Cobrado hoy",
+            "value": format_money(interest_today),
+            "hint": "Pagos recibidos",
+            "tone": "success",
+            "url": url_for("payments.index") if current_user.has_any_permission("payments.view", "payments.manage") else None,
+        },
+        {
+            "title": "Ventas de hoy",
+            "value": format_money(sales_today),
+            "hint": "Facturación",
+            "tone": "info",
+            "url": url_for("sales.index") if current_user.has_any_permission("sales.view", "sales.manage") else None,
+        },
+        {
+            "title": "Compras de hoy",
+            "value": format_money(purchases_today),
+            "hint": "Compras directas",
+            "tone": "warning",
+            "url": url_for("purchases.index") if current_user.has_any_permission("purchases.view", "purchases.manage") else None,
+        },
+        {
+            "title": "Caja disponible",
+            "value": format_money(cash_value),
+            "hint": "Sesión abierta",
+            "tone": "gold",
+            "url": url_for("cash.index") if current_user.has_any_permission("cash.view", "cash.manage") else None,
+        },
+        {
+            "title": "Contratos activos",
+            "value": str(active_contracts),
+            "hint": "En vigor",
+            "tone": "primary",
+            "url": url_for("pawn.index") if current_user.has_any_permission("pawn.view", "pawn.manage") else None,
+        },
+        {
+            "title": "Vencidos / gracia",
+            "value": str(expired_count),
+            "hint": "Requieren atención",
+            "tone": "warning",
+            "url": url_for("pawn.expired") if current_user.has_any_permission("pawn.view", "pawn.manage") else None,
+        },
+        {
+            "title": "Disponibles venta",
+            "value": str(available_items),
+            "hint": "Inventario",
+            "tone": "secondary",
+            "url": url_for("inventory.index") if current_user.has_any_permission("inventory.view", "inventory.manage") else None,
+        },
+        {
+            "title": "Clientes",
+            "value": str(Customer.query.filter_by(is_deleted=False).count()),
+            "hint": "Base",
+            "tone": "secondary",
+            "url": url_for("customers.index") if current_user.has_any_permission("customers.view", "customers.manage") else None,
+        },
+        {
+            "title": "Sucursales",
+            "value": str(Branch.query.filter_by(is_deleted=False, is_active=True).count()),
+            "hint": "Red",
+            "tone": "secondary",
+            "url": url_for("branches.index") if current_user.has_any_permission("branches.view", "branches.manage") else None,
+        },
+        {
+            "title": "Usuarios",
+            "value": str(User.query.filter_by(is_deleted=False, account_active=True).count()),
+            "hint": "Equipo",
+            "tone": "secondary",
+            "url": url_for("users.index") if current_user.has_any_permission("users.view", "users.manage") else None,
+        },
+        {
+            "title": "Ganancia hoy (est.)",
+            "value": format_money(interest_today + sales_today - purchases_today),
+            "hint": "Estimación operativa",
+            "tone": "success",
+            "url": url_for("reports.index") if current_user.has_any_permission("reports.view", "reports.global") else None,
+        },
     ]
 
     alerts = []
