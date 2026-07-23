@@ -839,3 +839,180 @@ textarea {
     justify-self: end;
   }
 }
+
+/* ===== Clientes lista / detalle ===== */
+.client-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+.client-search-wrap { flex: 1 1 220px; }
+.client-status-wrap { flex: 0 1 160px; }
+
+.client-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.client-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  border-radius: 18px;
+  text-decoration: none !important;
+  color: inherit !important;
+  background: rgba(28, 28, 30, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: var(--ios-blur);
+  -webkit-backdrop-filter: var(--ios-blur);
+  transition: 0.18s ease;
+}
+.client-row:hover {
+  border-color: rgba(250, 204, 21, 0.45);
+  transform: translateY(-1px);
+}
+
+.client-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(250, 204, 21, 0.18);
+  color: var(--gold);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.client-avatar.lg { width: 64px; height: 64px; font-size: 1.2rem; }
+.client-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.client-row-main { flex: 1; min-width: 0; }
+.client-row-name {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.client-row-meta {
+  font-size: 0.86rem;
+  color: rgba(235, 235, 245, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.client-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0.2rem 0.7rem;
+  border-radius: 980px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  background: rgba(48, 209, 88, 0.18);
+  color: #86efac;
+  text-transform: capitalize;
+  flex-shrink: 0;
+}
+.client-status.status-bloqueado,
+.client-status.status-restringido { background: rgba(255,69,58,.18); color: #fca5a5; }
+.client-status.status-inactivo,
+.client-status.status-en_revision { background: rgba(255,159,10,.18); color: #fcd34d; }
+
+.client-profile-top {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.client-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+@media (min-width: 768px) {
+  .client-info-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.client-info-box {
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  padding: 0.7rem 0.8rem;
+  background: rgba(0,0,0,.22);
+}
+.client-info-box .label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(235,235,245,.45);
+  margin-bottom: 0.25rem;
+}
+.client-info-box .value {
+  font-weight: 750;
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+.score-pill {
+  display: inline-flex;
+  padding: 0.3rem 0.75rem;
+  border-radius: 980px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.score-pill.tone-good { background: rgba(48,209,88,.18); color: #86efac; }
+.score-pill.tone-mid { background: rgba(255,159,10,.18); color: #fcd34d; }
+.score-pill.tone-bad { background: rgba(255,69,58,.18); color: #fca5a5; }
+
+.score-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  overflow: hidden;
+}
+.score-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #30d158, #facc15, #ff9f0a);
+}
+
+.recommend-box {
+  border-radius: 16px;
+  padding: 0.9rem 1rem;
+  background: rgba(250, 204, 21, 0.12);
+  border: 1px solid rgba(250, 204, 21, 0.28);
+}
+.recommend-box .label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(250, 204, 21, 0.75);
+}
+.recommend-value {
+  font-size: 1.45rem;
+  font-weight: 850;
+  color: #fde047;
+  letter-spacing: -0.03em;
+}
+
+.client-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+.btn-success-soft {
+  background: rgba(48, 209, 88, 0.2) !important;
+  border: 1px solid rgba(48, 209, 88, 0.4) !important;
+  color: #86efac !important;
+  border-radius: 980px !important;
+}
+.btn-success-soft:hover {
+  background: rgba(48, 209, 88, 0.32) !important;
+  color: #fff !important;
+}

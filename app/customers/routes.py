@@ -126,19 +126,97 @@ def create():
 @login_required
 @permission_required("customers.view", "customers.manage")
 def detail(customer_id: int):
+    from app.models import PawnContract, PawnPayment
+    from app.utils.money import ZERO, money_add, to_decimal
+
     customer = CustomerRepository.get_by_id(customer_id)
     if customer is None or customer.is_deleted:
         abort(404)
     if not current_user.can_access_branch(customer.branch_id):
         abort(403)
+
     evidence = EvidenceFile.query.filter_by(
         related_type="customer", related_id=customer.id, is_deleted=False
     ).all()
+
+    contracts = (
+        PawnContract.query.filter_by(customer_id=customer.id, is_deleted=False)
+        .order_by(PawnContract.id.desc())
+        .all()
+    )
+    open_statuses = {
+        "activo",
+        "renovado",
+        "proximo_vencer",
+        "vencido",
+        "en_periodo_gracia",
+        "pendiente_autorizacion",
+    }
+    open_contracts = [c for c in contracts if c.status in open_statuses]
+    paid_contracts = sum(1 for c in contracts if c.status in {"pagado", "cerrado", "retirado"})
+
+    payments = (
+        PawnPayment.query.filter_by(
+            customer_id=customer.id, is_voided=False, is_deleted=False
+        )
+        .order_by(PawnPayment.paid_at.desc())
+        .limit(100)
+        .all()
+    )
+
+    payment_rows = []
+    interest_paid = ZERO
+    for payment in payments:
+        capital = ZERO
+        interest = ZERO
+        for alloc in payment.allocations:
+            if alloc.concept == "capital":
+                capital = money_add(capital, alloc.amount)
+            elif alloc.concept == "interes":
+                interest = money_add(interest, alloc.amount)
+        interest_paid = money_add(interest_paid, interest)
+        payment_rows.append({"payment": payment, "capital": capital, "interest": interest})
+
+    capital_pending = sum((to_decimal(c.capital_balance) for c in open_contracts), ZERO)
+    total_pending = sum((to_decimal(c.pending_total) for c in open_contracts), ZERO)
+
+    # Score simple operativo (0-100)
+    score = 70
+    if paid_contracts:
+        score += min(20, paid_contracts * 5)
+    if interest_paid > ZERO:
+        score += 5
+    late = sum(1 for c in open_contracts if c.status in {"vencido", "en_periodo_gracia"})
+    score -= late * 15
+    if customer.status in {"bloqueado", "restringido"}:
+        score -= 25
+    score = max(0, min(100, score))
+    if score >= 75:
+        score_label, score_tone = "Bueno", "good"
+    elif score >= 45:
+        score_label, score_tone = "Medio", "mid"
+    else:
+        score_label, score_tone = "Riesgo", "bad"
+
+    stats = {
+        "interest_paid": interest_paid,
+        "paid_contracts": paid_contracts,
+        "active_contracts": len(open_contracts),
+        "capital_pending": capital_pending,
+        "total_pending": total_pending,
+        "score": score,
+        "score_label": score_label,
+        "score_tone": score_tone,
+    }
+
     return render_template(
         "customers/detail.html",
         title=f"Cliente {customer.code}",
         customer=customer,
         evidence=evidence,
+        open_contracts=open_contracts,
+        payment_rows=payment_rows,
+        stats=stats,
     )
 
 

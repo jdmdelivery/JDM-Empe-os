@@ -1,52 +1,47 @@
 {% extends "layouts/app.html" %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+<div class="ios-page-header">
   <div>
+    <p class="ios-eyebrow">Cartera</p>
     <h1 class="page-title">Clientes</h1>
-    <p class="page-subtitle mb-0">Registro, búsqueda y estados de clientes</p>
+    <p class="page-subtitle mb-0">Toque un cliente para ver detalle e historial</p>
   </div>
   {% if current_user.has_permission('customers.manage') %}
-  <a href="{{ url_for('customers.create') }}" class="btn btn-jdm">Nuevo cliente</a>
+  <a href="{{ url_for('customers.create') }}" class="btn btn-jdm">+ Nuevo cliente</a>
   {% endif %}
 </div>
 
-<form class="row g-2 mb-3" method="get">
-  <div class="col-md-5">{{ form.q(class="form-control", placeholder="Nombre, cédula, teléfono, código...") }}</div>
-  <div class="col-md-3">{{ form.status(class="form-select") }}</div>
-  <div class="col-auto">{{ form.submit(class="btn btn-jdm") }}</div>
+<form class="client-filters mb-3" method="get">
+  <div class="client-search-wrap">
+    {{ form.q(class="form-control", placeholder="Buscar nombre, cédula, teléfono...") }}
+  </div>
+  <div class="client-status-wrap">
+    {{ form.status(class="form-select") }}
+  </div>
+  {{ form.submit(class="btn btn-outline-jdm") }}
 </form>
 
-<div class="table-jdm table-responsive">
-  <table class="table align-middle mb-0">
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Nombre</th>
-        <th>Cédula</th>
-        <th>Teléfono</th>
-        <th>Estado</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for c in customers %}
-      <tr>
-        <td><strong>{{ c.code }}</strong></td>
-        <td>{{ c.full_name }}</td>
-        <td>{{ c.national_id }}</td>
-        <td>{{ c.phone_primary }}</td>
-        <td><span class="badge text-bg-secondary badge-status">{{ c.status }}</span></td>
-        <td class="text-end">
-          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('customers.detail', customer_id=c.id) }}">Ver</a>
-          {% if current_user.has_permission('customers.manage') %}
-          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('customers.edit', customer_id=c.id) }}">Editar</a>
-          {% endif %}
-        </td>
-      </tr>
+<div class="client-list">
+  {% for c in customers %}
+  <a class="client-row" href="{{ url_for('customers.detail', customer_id=c.id) }}">
+    <div class="client-avatar" aria-hidden="true">
+      {% if c.photo_path %}
+      <img src="{{ url_for('uploaded_file', filename=c.photo_path) }}" alt="">
       {% else %}
-      <tr><td colspan="6" class="text-muted p-3">No hay clientes.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      <span>{{ (c.first_name[:1] ~ c.last_name[:1])|upper }}</span>
+      {% endif %}
+    </div>
+    <div class="client-row-main">
+      <div class="client-row-name">{{ c.full_name }}</div>
+      <div class="client-row-meta">
+        <span>{{ c.sector or c.city or c.address or 'Sin dirección' }}</span>
+        · <span>{{ c.phone_primary }}</span>
+      </div>
+    </div>
+    <span class="client-status status-{{ c.status }}">{{ c.status|capitalize }}</span>
+  </a>
+  {% else %}
+  <div class="empty-state glass">No hay clientes con ese filtro.</div>
+  {% endfor %}
 </div>
 {% endblock %}

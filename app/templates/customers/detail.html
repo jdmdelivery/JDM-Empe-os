@@ -1,56 +1,173 @@
 {% extends "layouts/app.html" %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+<div class="ios-page-header">
   <div>
+    <p class="ios-eyebrow">{{ customer.code }}</p>
     <h1 class="page-title">{{ customer.full_name }}</h1>
-    <p class="page-subtitle mb-0">{{ customer.code }} · {{ customer.national_id }} · {{ customer.status }}</p>
+    <p class="page-subtitle mb-0">Detalle del cliente · historial de pagos</p>
   </div>
-  <div class="d-flex gap-2">
+  <div class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-outline-jdm" href="{{ url_for('customers.index') }}">← Lista</a>
     {% if current_user.has_permission('customers.manage') %}
-    <a class="btn btn-jdm" href="{{ url_for('customers.edit', customer_id=customer.id) }}">Editar</a>
-    {% endif %}
-    {% if current_user.has_permission('deliverers.manage') %}
-    <a class="btn btn-outline-primary" href="{{ url_for('deliverers.create') }}?customer_id={{ customer.id }}">Registrar quien entrega</a>
+    <a class="btn btn-jdm" href="{{ url_for('customers.edit', customer_id=customer.id) }}">Editar cliente</a>
     {% endif %}
   </div>
 </div>
 
-<div class="row g-3">
-  <div class="col-lg-6">
-    <div class="card-jdm">
-      <h2 class="h5">Datos</h2>
-      <p class="mb-1"><strong>Teléfono:</strong> {{ customer.phone_primary }}</p>
-      <p class="mb-1"><strong>WhatsApp:</strong> {{ customer.whatsapp or '—' }}</p>
-      <p class="mb-1"><strong>Correo:</strong> {{ customer.email or '—' }}</p>
-      <p class="mb-1"><strong>Dirección:</strong> {{ customer.address or '—' }}</p>
-      <p class="mb-1"><strong>Ciudad:</strong> {{ customer.city or '—' }}</p>
-      <p class="mb-1"><strong>Ocupación:</strong> {{ customer.occupation or '—' }}</p>
-      <p class="mb-0"><strong>Referencia:</strong> {{ customer.reference_name or '—' }} {{ customer.reference_phone or '' }}</p>
+<section class="glass client-profile mb-3">
+  <div class="client-profile-top">
+    <div class="client-avatar lg" aria-hidden="true">
+      {% if customer.photo_path %}
+      <img src="{{ url_for('uploaded_file', filename=customer.photo_path) }}" alt="">
+      {% else %}
+      <span>{{ (customer.first_name[:1] ~ customer.last_name[:1])|upper }}</span>
+      {% endif %}
+    </div>
+    <div>
+      <div class="client-row-name" style="font-size:1.15rem">{{ customer.full_name }}</div>
+      <span class="client-status status-{{ customer.status }}">{{ customer.status|capitalize }}</span>
     </div>
   </div>
-  <div class="col-lg-6">
-    <div class="card-jdm">
-      <h2 class="h5">Galería</h2>
-      <div class="row g-2">
-        {% for path, label in [
-          (customer.photo_path, 'Cliente'),
-          (customer.document_front_path, 'Documento frente'),
-          (customer.document_back_path, 'Documento reverso'),
-          (customer.signature_path, 'Firma')
-        ] %}
-        <div class="col-6">
-          <div class="small text-muted">{{ label }}</div>
-          {% if path %}
-          <a href="{{ url_for('uploaded_file', filename=path) }}" target="_blank">
-            <img src="{{ url_for('uploaded_file', filename=path) }}" class="img-fluid rounded border" alt="{{ label }}">
-          </a>
-          {% else %}
-          <div class="border rounded p-3 text-muted">Sin imagen</div>
-          {% endif %}
-        </div>
-        {% endfor %}
-      </div>
+
+  <div class="client-info-grid">
+    <div class="client-info-box">
+      <div class="label">Teléfono</div>
+      <div class="value">{{ customer.phone_primary }}</div>
+    </div>
+    <div class="client-info-box">
+      <div class="label">Dirección</div>
+      <div class="value">{{ customer.address or customer.sector or '—' }}</div>
+    </div>
+    <div class="client-info-box">
+      <div class="label">Sector / ciudad</div>
+      <div class="value">{{ customer.sector or customer.city or '—' }}</div>
+    </div>
+    <div class="client-info-box">
+      <div class="label">Documento</div>
+      <div class="value">{{ customer.national_id }}</div>
     </div>
   </div>
+</section>
+
+<section class="glass mb-3">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+    <h2 class="form-section-title mb-0">Resumen de crédito</h2>
+    <span class="score-pill tone-{{ stats.score_tone }}">{{ stats.score_label }} · {{ stats.score }}/100</span>
+  </div>
+  <div class="score-bar"><span style="width:{{ stats.score }}%"></span></div>
+  <div class="client-info-grid mt-3">
+    <div class="client-info-box">
+      <div class="label">Interés pagado (total)</div>
+      <div class="value">{{ format_money(stats.interest_paid, currency_symbol) }}</div>
+    </div>
+    <div class="client-info-box">
+      <div class="label">Préstamos pagados</div>
+      <div class="value">{{ stats.paid_contracts }}</div>
+    </div>
+    <div class="client-info-box">
+      <div class="label">Contratos activos</div>
+      <div class="value">{{ stats.active_contracts }}</div>
+    </div>
+  </div>
+  <div class="recommend-box mt-3">
+    <div class="label">Capital pendiente</div>
+    <div class="recommend-value">{{ format_money(stats.capital_pending, currency_symbol) }}</div>
+    <div class="kpi-hint">Total a pagar: {{ format_money(stats.total_pending, currency_symbol) }}</div>
+  </div>
+</section>
+
+<div class="client-actions mb-3">
+  {% set wa = customer.whatsapp or customer.phone_primary %}
+  {% if wa %}
+  <a class="btn btn-success-soft" target="_blank" rel="noopener"
+     href="https://wa.me/{{ wa|replace('-','')|replace(' ','')|replace('+','') }}?text={{ ('Hola ' ~ customer.first_name ~ ', le recordamos su pago pendiente en JDM Empeños.')|urlencode }}">
+    Recordar por WhatsApp
+  </a>
+  {% endif %}
+  {% if current_user.has_permission('payments.manage') and open_contracts %}
+  <a class="btn btn-jdm" href="{{ url_for('payments.create', contract_id=open_contracts[0].id) }}">+ Registrar pago</a>
+  {% elif current_user.has_permission('payments.manage') %}
+  <a class="btn btn-jdm" href="{{ url_for('payments.create') }}">+ Registrar pago</a>
+  {% endif %}
+  {% if current_user.has_permission('pawn.manage') %}
+  <a class="btn btn-outline-jdm" href="{{ url_for('pawn.create') }}">+ Nuevo empeño</a>
+  {% endif %}
 </div>
+
+{% if open_contracts %}
+<section class="glass mb-3">
+  <h2 class="form-section-title">Contratos abiertos</h2>
+  {% for c in open_contracts %}
+  <a class="ios-list-row" href="{{ url_for('pawn.detail', contract_id=c.id) }}" style="text-decoration:none;color:inherit">
+    <div class="ios-list-main">
+      <div class="ios-list-title">{{ c.contract_number }}</div>
+      <div class="ios-list-sub">{{ c.status }} · capital {{ format_money(c.capital_balance, currency_symbol) }}</div>
+    </div>
+    <div class="ios-list-meta">{{ format_money(c.pending_total, currency_symbol) }}</div>
+  </a>
+  {% endfor %}
+</section>
+{% endif %}
+
+<section class="glass mb-3">
+  <h2 class="form-section-title">Historial de pagos</h2>
+  <p class="page-subtitle mb-3">Pagos registrados de este cliente</p>
+  <div class="table-jdm table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Recibo</th>
+          <th>Monto</th>
+          <th>Capital</th>
+          <th>Interés</th>
+          <th>Fecha</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in payment_rows %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ row.payment.receipt_number }}</td>
+          <td>{{ format_money(row.payment.amount, currency_symbol) }}</td>
+          <td>{{ format_money(row.capital, currency_symbol) }}</td>
+          <td>{{ format_money(row.interest, currency_symbol) }}</td>
+          <td>{{ format_datetime(row.payment.paid_at) }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-jdm" href="{{ url_for('payments.receipt', payment_id=row.payment.id) }}">Recibo</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-muted p-3">Aún no hay pagos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% if evidence %}
+<section class="glass">
+  <h2 class="form-section-title">Documentos / fotos</h2>
+  <div class="row g-2">
+    {% for path, label in [
+      (customer.photo_path, 'Cliente'),
+      (customer.document_front_path, 'Documento frente'),
+      (customer.document_back_path, 'Documento reverso'),
+      (customer.signature_path, 'Firma')
+    ] %}
+    <div class="col-6 col-md-3">
+      <div class="small text-muted mb-1">{{ label }}</div>
+      {% if path %}
+      <a href="{{ url_for('uploaded_file', filename=path) }}" target="_blank">
+        <img src="{{ url_for('uploaded_file', filename=path) }}" class="img-fluid rounded border" alt="{{ label }}">
+      </a>
+      {% else %}
+      <div class="border rounded p-3 text-muted">Sin imagen</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
 {% endblock %}
