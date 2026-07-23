@@ -1,0 +1,54 @@
+{% extends "layouts/app.html" %}
+
+{% block content %}
+<section class="dash-hero">
+  <div class="dash-hero-glow" aria-hidden="true"></div>
+  <div class="ios-page-header mb-0">
+    <div>
+      <p class="ios-eyebrow">JDM Empeños</p>
+      <h1 class="page-title">Inicio</h1>
+      <p class="page-subtitle mb-0">Resumen del día · {{ currency_symbol }}</p>
+    </div>
+    {% if current_user.has_permission('pawn.manage') %}
+    <a class="btn btn-jdm" href="{{ url_for('pawn.create') }}">+ Nuevo empeño</a>
+    {% endif %}
+  </div>
+</section>
+
+{% for alert in alerts %}
+<div class="alert alert-{{ alert.level }} alert-glass dash-banner mb-3">{{ alert.text }}</div>
+{% endfor %}
+
+<div class="dash-actions mb-3">
+  {% if current_user.has_any_permission('pawn.view', 'pawn.manage') %}
+  <a class="dash-chip" href="{{ url_for('pawn.index') }}">Empeños</a>
+  {% endif %}
+  {% if current_user.has_any_permission('payments.view', 'payments.manage') %}
+  <a class="dash-chip" href="{{ url_for('payments.index') }}">Pagos</a>
+  {% endif %}
+  {% if current_user.has_any_permission('cash.view', 'cash.manage') %}
+  <a class="dash-chip" href="{{ url_for('cash.index') }}">Caja</a>
+  {% endif %}
+  {% if current_user.has_permission('dashboard.view') %}
+  <a class="dash-chip" href="{{ url_for('dashboard.activity') }}">Actividad</a>
+  {% endif %}
+</div>
+
+<div class="dash-grid-wrap">
+  <div class="dash-ambient" aria-hidden="true"></div>
+  <div class="row g-3">
+    {% for card in cards %}
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card-jdm kpi-card tone-{{ card.tone }}">
+        <div class="kpi-top">
+          <span class="kpi-label">{{ card.title }}</span>
+          <span class="kpi-dot" aria-hidden="true"></span>
+        </div>
+        <div class="kpi-value">{{ card.value }}</div>
+        <div class="kpi-hint">{{ card.hint }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

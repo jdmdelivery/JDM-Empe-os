@@ -1,0 +1,26 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<h1 class="page-title">Vencimientos</h1>
+<p class="page-subtitle">Flujo: activo → próximo → vencido → gracia → autorización → inventario</p>
+<div class="table-jdm table-responsive"><table class="table mb-0">
+<thead><tr><th>Contrato</th><th>Cliente</th><th>Vence</th><th>Estado</th><th>Pendiente</th><th></th></tr></thead>
+<tbody>
+{% for c in contracts %}
+<tr>
+  <td>{{ c.contract_number }}</td>
+  <td>{{ c.customer.full_name if c.customer else '—' }}</td>
+  <td>{{ c.due_date }}</td>
+  <td><span class="badge text-bg-danger">{{ c.status }}</span></td>
+  <td>{{ format_money(c.pending_total, currency_symbol) }}</td>
+  <td class="text-end">
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('pawn.detail', contract_id=c.id) }}">Ver</a>
+    <a class="btn btn-sm btn-success" href="{{ url_for('payments.create') }}">Pagar</a>
+    <a class="btn btn-sm btn-warning" href="{{ url_for('renewals.create') }}">Renovar</a>
+    {% if current_user.has_permission('exceptions.authorize') and not c.authorized_for_inventory %}
+    <a class="btn btn-sm btn-danger" href="{{ url_for('pawn.authorize_expired', contract_id=c.id) }}">Autorizar</a>
+    {% endif %}
+  </td>
+</tr>
+{% else %}<tr><td colspan="6" class="text-muted p-3">Sin vencidos.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recibo 58 mm · {{ contract.contract_number }}</title>
+  <style>
+    @page { size: 58mm auto; margin: 2mm; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #111;
+      color: #111;
+      font-family: "Courier New", Courier, monospace;
+    }
+    .actions {
+      max-width: 320px;
+      margin: 16px auto;
+      display: flex;
+      gap: 8px;
+    }
+    .actions button, .actions a {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+    }
+    .print { background: #facc15; color: #000; }
+    .back { background: #333; color: #facc15; }
+    .ticket {
+      width: 58mm;
+      margin: 0 auto 24px;
+      background: #fff;
+      color: #111;
+      padding: 3mm;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .center { text-align: center; }
+    .bold { font-weight: 800; }
+    .row { display: flex; justify-content: space-between; gap: 4px; margin: 2px 0; }
+    hr { border: none; border-top: 1px dashed #999; margin: 6px 0; }
+    @media print {
+      body { background: #fff; }
+      .actions { display: none !important; }
+      .ticket { margin: 0; width: 58mm; }
+    }
+  </style>
+</head>
+<body>
+  <div class="actions no-print">
+    <button class="print" onclick="window.print()">Imprimir 58 mm</button>
+    <a class="back" href="{{ url_for('pawn.detail', contract_id=contract.id) }}">Volver</a>
+  </div>
+
+  <div class="ticket">
+    <div class="center bold">{{ business_name }}</div>
+    <div class="center bold">RECIBO DE EMPEÑO</div>
+    <div class="center">#{{ contract.contract_number }}</div>
+    <hr>
+    <div><span class="bold">Cliente:</span> {{ contract.customer.full_name if contract.customer else '—' }}</div>
+    <div><span class="bold">ID/Cédula:</span> {{ contract.customer.national_id if contract.customer else '—' }}</div>
+    <div><span class="bold">Tel:</span> {{ contract.customer.phone_primary if contract.customer else '—' }}</div>
+    <hr>
+    <div><span class="bold">Tipo:</span> {{ contract.item.category.name if contract.item and contract.item.category else '—' }}</div>
+    <div><span class="bold">Artículo:</span>
+      {% if contract.item %}{{ contract.item.brand or '' }} {{ contract.item.model or '' }}{% else %}—{% endif %}
+    </div>
+    <div><span class="bold">Código:</span> {{ contract.item.code if contract.item else '—' }}</div>
+    <hr>
+    <div class="row"><span>Capital</span><span>{{ format_money(contract.capital, currency_symbol) }}</span></div>
+    <div class="row"><span>Interés ({{ contract.percent }}%)</span><span>{{ format_money(contract.interest_amount, currency_symbol) }}</span></div>
+    <div class="row bold"><span>Total</span><span>{{ format_money(contract.total_due, currency_symbol) }}</span></div>
+    <hr>
+    <div>Inicio: {{ contract.start_date }}</div>
+    <div>Vence: {{ contract.due_date }}</div>
+    <div>Gracia: {{ contract.grace_days }} días</div>
+    <hr>
+    <div class="center">Gracias por su preferencia</div>
+  </div>
+</body>
+</html>

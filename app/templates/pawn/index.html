@@ -1,0 +1,67 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<section class="glass">
+  <div class="empenos-toolbar">
+    <div>
+      <h1 class="page-title">Empeños</h1>
+      <p class="page-subtitle">Busca, cobra y gestiona contratos</p>
+    </div>
+    {% if current_user.has_permission('pawn.manage') %}
+    <a class="btn btn-jdm" href="{{ url_for('pawn.create') }}">+ Nuevo empeño</a>
+    {% endif %}
+  </div>
+
+  <form method="get" class="empenos-search mb-3">
+    <input
+      type="search"
+      name="q"
+      value="{{ q or '' }}"
+      class="form-control"
+      placeholder="Buscar cliente, contrato, artículo o teléfono"
+    >
+    <button class="btn btn-jdm" type="submit">Buscar</button>
+  </form>
+
+  {% for c in contracts %}
+  <article class="empeno-ficha">
+    <div class="ficha-header">
+      <div>{{ c.contract_number }}</div>
+      <div>{{ c.start_date or (c.created_at.strftime('%Y-%m-%d') if c.created_at else '—') }}</div>
+    </div>
+    <div class="ficha-line">
+      <b>Artículo:</b>
+      {% if c.item %}
+        {{ c.item.brand or '' }} {{ c.item.model or '' }} {{ c.item.code }}
+      {% else %}—{% endif %}
+    </div>
+    <div class="ficha-line">
+      <b>Cliente:</b> {{ c.customer.full_name if c.customer else '—' }}
+    </div>
+    <div class="ficha-line">
+      <b>Monto:</b> {{ format_money(c.capital, currency_symbol) }}
+    </div>
+    <div class="ficha-line">
+      <b>Interés:</b> {{ format_money(c.interest_amount, currency_symbol) }} / mes
+      <span class="text-muted">({{ c.percent }}%)</span>
+    </div>
+    <div class="ficha-line">
+      <b>Estado:</b>
+      <span class="estado {{ c.status }}">{{ c.status|replace('_', ' ') }}</span>
+    </div>
+    <div class="ficha-actions">
+      <a href="{{ url_for('pawn.ticket', contract_id=c.id) }}" target="_blank">Recibo 58 mm</a>
+      <a href="{{ url_for('pawn.detail', contract_id=c.id) }}">Ver</a>
+      {% if current_user.has_permission('payments.manage') %}
+      <a href="{{ url_for('payments.create', contract_id=c.id) }}">Pago</a>
+      {% endif %}
+      <a href="{{ url_for('pawn.pdf', contract_id=c.id) }}" target="_blank">Contrato PDF</a>
+      {% if current_user.has_permission('pawn.manage') %}
+      <a href="{{ url_for('renewals.create', contract_id=c.id) }}">Renovar</a>
+      {% endif %}
+    </div>
+  </article>
+  {% else %}
+  <div class="empty-state">Sin empeños{% if q %} para “{{ q }}”{% endif %}.</div>
+  {% endfor %}
+</section>
+{% endblock %}

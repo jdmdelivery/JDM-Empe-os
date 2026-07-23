@@ -1,0 +1,91 @@
+{% extends "layouts/base.html" %}
+
+{% block body %}
+<div class="app-shell">
+  <header class="app-header">
+    <div class="app-header-inner">
+      <nav class="app-nav">
+        <div class="dropdown">
+          <a class="dropdown-toggle menu-trigger active" href="#" data-bs-toggle="dropdown" aria-expanded="false">Menú</a>
+          <ul class="dropdown-menu dropdown-menu-start menu-panel">
+            {% if current_user.has_permission('dashboard.view') %}
+            <li><a class="dropdown-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}" href="{{ url_for('dashboard.index') }}">Inicio</a></li>
+            <li><a class="dropdown-item {% if request.endpoint == 'dashboard.activity' %}active{% endif %}" href="{{ url_for('dashboard.activity') }}">Actividad</a></li>
+            {% endif %}
+            {% if current_user.has_any_permission('pawn.view', 'pawn.manage') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('pawn') and request.endpoint != 'pawn.expired' %}active{% endif %}" href="{{ url_for('pawn.index') }}">Empeños</a></li>
+            <li><a class="dropdown-item {% if request.endpoint == 'pawn.expired' %}active{% endif %}" href="{{ url_for('pawn.expired') }}">Vencidos</a></li>
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('renewals') %}active{% endif %}" href="{{ url_for('renewals.index') }}">Renovaciones</a></li>
+            {% endif %}
+            {% if current_user.has_any_permission('payments.view', 'payments.manage') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('payments') %}active{% endif %}" href="{{ url_for('payments.index') }}">Pagos</a></li>
+            {% endif %}
+            {% if current_user.has_any_permission('cash.view', 'cash.manage') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('cash') %}active{% endif %}" href="{{ url_for('cash.index') }}">Caja</a></li>
+            {% endif %}
+            {% if current_user.has_any_permission('expenses.view', 'expenses.manage') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('expenses') %}active{% endif %}" href="{{ url_for('expenses.index') }}">Gastos</a></li>
+            {% endif %}
+            {% if current_user.has_any_permission('reports.view', 'reports.global') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('reports') %}active{% endif %}" href="{{ url_for('reports.index') }}">Reportes</a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            {% if current_user.has_any_permission('customers.view', 'customers.manage') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('customers') %}active{% endif %}" href="{{ url_for('customers.index') }}">Clientes</a></li>
+            {% endif %}
+            {% if current_user.has_any_permission('deliverers.view', 'deliverers.manage') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('deliverers') %}active{% endif %}" href="{{ url_for('deliverers.index') }}">Quien entrega</a></li>
+            {% endif %}
+            {% if current_user.has_any_permission('items.view', 'items.manage') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('items') %}active{% endif %}" href="{{ url_for('items.index') }}">Artículos</a></li>
+            {% endif %}
+            {% if current_user.has_any_permission('purchases.view', 'purchases.manage') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('purchases') %}active{% endif %}" href="{{ url_for('purchases.index') }}">Compras</a></li>
+            {% endif %}
+            {% if current_user.has_any_permission('inventory.view', 'inventory.manage') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('inventory') %}active{% endif %}" href="{{ url_for('inventory.index') }}">Inventario</a></li>
+            {% endif %}
+            {% if current_user.has_any_permission('sales.view', 'sales.manage') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('sales') %}active{% endif %}" href="{{ url_for('sales.index') }}">Ventas</a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            {% if current_user.has_any_permission('users.view', 'users.manage') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('users') and 'password' not in (request.endpoint or '') %}active{% endif %}" href="{{ url_for('users.index') }}">Usuarios</a></li>
+            {% endif %}
+            {% if current_user.has_any_permission('branches.view', 'branches.manage') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('branches') %}active{% endif %}" href="{{ url_for('branches.index') }}">Sucursales</a></li>
+            {% endif %}
+            {% if current_user.has_any_permission('settings.view', 'settings.manage') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('settings') %}active{% endif %}" href="{{ url_for('settings.index') }}">Configuración</a></li>
+            {% endif %}
+            {% if current_user.has_permission('audit.view') %}
+            <li><a class="dropdown-item {% if request.endpoint and request.endpoint.startswith('audit') %}active{% endif %}" href="{{ url_for('audit.index') }}">Auditoría</a></li>
+            {% endif %}
+            <li><a class="dropdown-item" href="{{ url_for('global_search') }}">Buscar</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('users.change_password') }}">Contraseña</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">Salir</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="brand-row">
+        <div class="brand-mark">JDM</div>
+        <h1>{{ app_name }}</h1>
+        <div class="brand-mark">JDM</div>
+      </div>
+      <div class="header-spacer" aria-hidden="true"></div>
+    </div>
+  </header>
+
+  <div class="main-area">
+    {% include "partials/flash.html" %}
+    {% block content %}{% endblock %}
+  </div>
+
+  <footer class="app-footer">© {{ now().year }} {{ app_name }} · {{ currency_symbol }}</footer>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% block page_scripts %}{% endblock %}
+{% endblock %}

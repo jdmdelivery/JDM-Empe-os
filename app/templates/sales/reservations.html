@@ -1,0 +1,18 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<h1 class="page-title">Reservas</h1>
+<div class="card-jdm mb-3"><form method="post">{{ form.hidden_tag() }}
+<div class="row g-3">
+  <div class="col-md-4">{{ form.customer_id.label(class="form-label") }}{{ form.customer_id(class="form-select") }}</div>
+  <div class="col-md-4">{{ form.item_id.label(class="form-label") }}{{ form.item_id(class="form-select") }}</div>
+  <div class="col-md-2">{{ form.deposit.label(class="form-label") }}{{ form.deposit(class="form-control") }}</div>
+  <div class="col-md-2 align-self-end">{{ form.submit(class="btn btn-jdm w-100") }}</div>
+</div></form></div>
+<div class="table-jdm table-responsive"><table class="table mb-0">
+<thead><tr><th>Artículo</th><th>Cliente</th><th>Depósito</th><th>Estado</th></tr></thead>
+<tbody>
+{% for r in reservations %}
+<tr><td>{{ r.item_id }}</td><td>{{ r.customer_id }}</td><td>{{ format_money(r.deposit, currency_symbol) }}</td><td>{{ r.status }}</td></tr>
+{% else %}<tr><td colspan="4" class="text-muted p-3">Sin reservas.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

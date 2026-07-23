@@ -1,0 +1,81 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+{% set item = contract.item %}
+{% set customer = contract.customer %}
+{% set photos = [] %}
+{% if item %}
+  {% set photos = item.images|rejectattr('is_deleted')|list %}
+{% endif %}
+{% set photo = photos[0] if photos else none %}
+
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+  <div>
+    <h1 class="page-title">{{ contract.contract_number }}</h1>
+    <p class="page-subtitle mb-0">
+      <span class="estado {{ contract.status }}">{{ contract.status }}</span>
+    </p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-jdm" href="{{ url_for('pawn.ticket', contract_id=contract.id) }}" target="_blank">Recibo 58 mm</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('pawn.ticket_pdf', contract_id=contract.id) }}" target="_blank">PDF 58 mm</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('pawn.pdf', contract_id=contract.id) }}" target="_blank">Contrato PDF</a>
+    {% if current_user.has_permission('payments.manage') %}
+    <a class="btn btn-success" href="{{ url_for('payments.create', contract_id=contract.id) }}">Pagar / Abonar</a>
+    {% endif %}
+    {% if current_user.has_permission('pawn.manage') %}
+    <a class="btn btn-outline-secondary" href="{{ url_for('renewals.create', contract_id=contract.id) }}">Renovar</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card-jdm mb-3">
+      <h2 class="form-section-title">Cliente</h2>
+      <p class="mb-1"><strong>Nombre:</strong> {{ customer.full_name if customer else '—' }}</p>
+      <p class="mb-1"><strong>Código:</strong> {{ customer.code if customer else '—' }}</p>
+      <p class="mb-1"><strong>ID / Cédula:</strong> {{ customer.national_id if customer else '—' }}</p>
+      <p class="mb-1"><strong>Teléfono:</strong> {{ customer.phone_primary if customer else '—' }}</p>
+      <p class="mb-0"><strong>Quien entrega:</strong> {{ contract.deliverer.full_name if contract.deliverer else '—' }}</p>
+    </div>
+    <div class="card-jdm">
+      <h2 class="form-section-title">Artículo</h2>
+      <p class="mb-1"><strong>Código:</strong> {{ item.code if item else '—' }}</p>
+      <p class="mb-1"><strong>Tipo:</strong> {{ item.category.name if item and item.category else '—' }}</p>
+      <p class="mb-1"><strong>Descripción:</strong>
+        {% if item %}{{ item.brand or '' }} {{ item.model or '' }}{% else %}—{% endif %}
+      </p>
+      <p class="mb-1"><strong>Serial/IMEI:</strong>
+        {% if item %}{{ item.serial_number or item.imei or '—' }}{% else %}—{% endif %}
+      </p>
+      <p class="mb-0"><strong>Vence:</strong> {{ contract.due_date }} (gracia {{ contract.grace_days }} días)</p>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card-jdm mb-3">
+      <h2 class="form-section-title">Foto</h2>
+      {% if photo and photo.file_url %}
+      <img src="{{ photo.file_url }}" alt="Foto del artículo" class="item-photo">
+      {% else %}
+      <div class="empty-state">Sin foto del artículo</div>
+      {% endif %}
+      {% if current_user.has_permission('pawn.manage') and contract.item %}
+      <form method="post" action="{{ url_for('pawn.upload_photo', contract_id=contract.id) }}" enctype="multipart/form-data" class="mt-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="form-label">Subir / cambiar foto</label>
+        <input class="form-control" type="file" name="item_photo" accept="image/*" capture="environment" required>
+        <button class="btn btn-jdm mt-2 w-100" type="submit">Guardar foto</button>
+      </form>
+      {% endif %}
+    </div>
+    <div class="card-jdm">
+      <h2 class="form-section-title">Montos</h2>
+      <p class="mb-1">Capital: {{ format_money(contract.capital_balance, currency_symbol) }}</p>
+      <p class="mb-1">Interés ({{ contract.percent }}%): {{ format_money(contract.interest_balance, currency_symbol) }}</p>
+      <p class="mb-1">Cargos: {{ format_money(contract.fee_balance, currency_symbol) }}</p>
+      <p class="mb-1">Mora: {{ format_money(contract.late_fee_balance, currency_symbol) }}</p>
+      <p class="fw-bold mb-0">Total pendiente: {{ format_money(contract.pending_total, currency_symbol) }}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

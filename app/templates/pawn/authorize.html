@@ -1,0 +1,10 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<h1 class="page-title">Autorizar para inventario</h1>
+<p class="page-subtitle">Contrato {{ contract.contract_number }}</p>
+<div class="card-jdm" style="max-width:640px">
+<form method="post">{{ form.hidden_tag() }}
+{{ form.reason.label(class="form-label") }}{{ form.reason(class="form-control", rows=4) }}
+<div class="mt-3">{{ form.submit(class="btn btn-danger") }}</div>
+</form></div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+  <div>
+    <h1 class="page-title">Recibo {{ payment.receipt_number }}</h1>
+    <p class="page-subtitle mb-0">{{ payment.payment_type }} · {{ payment.method }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-jdm" onclick="window.print()">Imprimir</button>
+    <a class="btn btn-outline-secondary" href="{{ url_for('payments.index') }}">Volver</a>
+  </div>
+</div>
+
+<section class="glass" style="max-width:520px">
+  <p class="mb-1"><strong>Contrato:</strong> {{ payment.contract.contract_number if payment.contract else '—' }}</p>
+  <p class="mb-1"><strong>Cliente:</strong> {{ payment.contract.customer.full_name if payment.contract and payment.contract.customer else '—' }}</p>
+  <p class="mb-1"><strong>Monto:</strong> {{ format_money(payment.amount, currency_symbol) }}</p>
+  <p class="mb-1"><strong>Saldo anterior:</strong> {{ format_money(payment.previous_balance, currency_symbol) }}</p>
+  <p class="mb-1"><strong>Saldo nuevo:</strong> {{ format_money(payment.new_balance, currency_symbol) }}</p>
+  <p class="mb-3"><strong>Quién pagó:</strong> {{ payment.payer_name or '—' }}</p>
+
+  <h2 class="form-section-title">Firma del cliente</h2>
+  {% if signature %}
+  <img src="/uploads/{{ signature.file_path }}" alt="Firma del cliente" class="item-photo" style="max-height:160px;object-fit:contain;background:#fff">
+  {% else %}
+  <div class="empty-state">Sin firma registrada</div>
+  {% endif %}
+</section>
+{% endblock %}

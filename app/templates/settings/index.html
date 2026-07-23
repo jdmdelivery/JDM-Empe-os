@@ -1,0 +1,74 @@
+{% extends "layouts/app.html" %}
+
+{% block content %}
+<div class="mb-3">
+  <h1 class="page-title">Configuración</h1>
+  <p class="page-subtitle">Datos del negocio, moneda RD$ y parámetros base</p>
+</div>
+
+<div class="card-jdm">
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <fieldset {% if not can_manage %}disabled{% endif %}>
+      <div class="row g-3">
+        <div class="col-md-6">{{ form.business_name.label(class="form-label") }}{{ form.business_name(class="form-control") }}</div>
+        <div class="col-md-6">{{ form.business_rnc.label(class="form-label") }}{{ form.business_rnc(class="form-control") }}</div>
+        <div class="col-md-4">{{ form.business_phone.label(class="form-label") }}{{ form.business_phone(class="form-control") }}</div>
+        <div class="col-md-4">{{ form.business_whatsapp.label(class="form-label") }}{{ form.business_whatsapp(class="form-control") }}</div>
+        <div class="col-md-4">{{ form.business_email.label(class="form-label") }}{{ form.business_email(class="form-control") }}</div>
+        <div class="col-md-8">{{ form.business_address.label(class="form-label") }}{{ form.business_address(class="form-control") }}</div>
+        <div class="col-md-4">{{ form.currency_symbol.label(class="form-label") }}{{ form.currency_symbol(class="form-control") }}</div>
+        <div class="col-md-4">{{ form.timezone.label(class="form-label") }}{{ form.timezone(class="form-control") }}</div>
+        <div class="col-md-4">{{ form.default_interest_percent.label(class="form-label") }}{{ form.default_interest_percent(class="form-control") }}</div>
+        <div class="col-md-4">{{ form.default_grace_days.label(class="form-label") }}{{ form.default_grace_days(class="form-control") }}</div>
+        <div class="col-md-4">{{ form.default_duration_days.label(class="form-label") }}{{ form.default_duration_days(class="form-control") }}</div>
+      </div>
+    </fieldset>
+    {% if can_manage %}
+    <div class="mt-4">{{ form.submit(class="btn btn-jdm") }}</div>
+    {% else %}
+    <div class="alert alert-info mt-4 mb-0">Solo lectura: no tiene permiso para modificar la configuración.</div>
+    {% endif %}
+  </form>
+</div>
+
+{% if can_manage %}
+<div class="card-jdm mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="h5 mb-1">Respaldos</h2>
+      <p class="text-muted small mb-0">Copia local de la base SQLite (fase 7)</p>
+    </div>
+    <form method="post" action="{{ url_for('settings.backup_now') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-outline-jdm">Crear respaldo ahora</button>
+    </form>
+  </div>
+  {% if backups %}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Archivo</th><th>Fecha</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        {% for b in backups %}
+        <tr>
+          <td>{{ b.filename }}</td>
+          <td>{{ b.created_at }}</td>
+          <td>{{ b.status or 'ok' }}</td>
+          <td class="text-end">
+            <form method="post" action="{{ url_for('settings.backup_restore', backup_id=b.id) }}"
+                  onsubmit="return confirm('¿Restaurar este respaldo? Se creará copia de seguridad del estado actual.');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm btn-outline-danger">Restaurar</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted mb-0">Aún no hay respaldos registrados.</p>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

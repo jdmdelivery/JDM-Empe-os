@@ -1,0 +1,186 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+  <div>
+    <h1 class="page-title">{{ title }}</h1>
+    <p class="page-subtitle mb-0">Se calcula capital, interés y total en {{ currency_symbol }}</p>
+  </div>
+  <a href="{{ url_for('pawn.index') }}" class="btn btn-outline-secondary">Volver</a>
+</div>
+
+<form method="post" novalidate id="pawnForm" class="pawn-form" enctype="multipart/form-data">
+  {{ form.hidden_tag() }}
+
+  <section class="glass mb-3">
+    <h2 class="form-section-title">1. Cliente</h2>
+    <div class="row g-3">
+      <div class="col-md-6">
+        {{ form.customer_id.label(class="form-label") }}
+        {{ form.customer_id(class="form-select", id="customer_id") }}
+        <a class="form-link" href="{{ url_for('customers.create') }}">+ Nuevo cliente</a>
+      </div>
+      <div class="col-md-6">
+        {{ form.deliverer_id.label(class="form-label") }}
+        {{ form.deliverer_id(class="form-select", id="deliverer_id") }}
+        <div class="form-check mt-2">
+          {{ form.same_as_customer(class="form-check-input", id="same_as_customer") }}
+          {{ form.same_as_customer.label(class="form-check-label") }}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="glass mb-3">
+    <h2 class="form-section-title">2. Artículo</h2>
+    <div class="row g-3">
+      <div class="col-md-4">
+        {{ form.category_id.label(class="form-label") }}
+        {{ form.category_id(class="form-select", id="category_id") }}
+      </div>
+      <div class="col-md-4">
+        {{ form.item_brand.label(class="form-label") }}
+        {{ form.item_brand(class="form-control", id="item_brand", placeholder="Ej: Samsung, cadena oro, tenis") }}
+      </div>
+      <div class="col-md-4">
+        {{ form.item_model.label(class="form-label") }}
+        {{ form.item_model(class="form-control", id="item_model", placeholder="Modelo o detalle") }}
+      </div>
+      <div class="col-md-4">
+        {{ form.item_weight.label(class="form-label") }}
+        {{ form.item_weight(class="form-control", id="item_weight", placeholder="Opcional") }}
+      </div>
+      <div class="col-md-4">
+        {{ form.item_serial.label(class="form-label") }}
+        {{ form.item_serial(class="form-control", id="item_serial", placeholder="Opcional") }}
+      </div>
+      <div class="col-md-8">
+        {{ form.item_photo.label(class="form-label") }}
+        {{ form.item_photo(class="form-control", id="item_photo", accept="image/*", capture="environment") }}
+        <div class="small text-muted mt-1">Toma o sube la foto del artículo</div>
+      </div>
+      <div class="col-md-4">
+        {{ form.item_id.label(class="form-label") }}
+        {{ form.item_id(class="form-select", id="item_id") }}
+      </div>
+    </div>
+  </section>
+
+  <section class="glass mb-3">
+    <h2 class="form-section-title">3. Monto e interés</h2>
+    <div class="row g-3">
+      <div class="col-md-3">
+        {{ form.capital.label(class="form-label") }}
+        {{ form.capital(class="form-control", placeholder="Ej: 5000") }}
+      </div>
+      <div class="col-md-3">
+        {{ form.percent.label(class="form-label") }}
+        {{ form.percent(class="form-control") }}
+      </div>
+      <div class="col-md-6">
+        {{ form.interest_type.label(class="form-label") }}
+        {{ form.interest_type(class="form-select") }}
+      </div>
+      <div class="col-md-3">
+        {{ form.duration_days.label(class="form-label") }}
+        {{ form.duration_days(class="form-control") }}
+      </div>
+      <div class="col-md-3">
+        {{ form.grace_days.label(class="form-label") }}
+        {{ form.grace_days(class="form-control") }}
+      </div>
+      <div class="col-md-3">
+        {{ form.fees_amount.label(class="form-label") }}
+        {{ form.fees_amount(class="form-control") }}
+      </div>
+    </div>
+  </section>
+
+  <section class="glass mb-3">
+    <h2 class="form-section-title">4. Mora (opcional)</h2>
+    <div class="row g-3">
+      <div class="col-md-4">
+        {{ form.late_percent.label(class="form-label") }}
+        {{ form.late_percent(class="form-control") }}
+      </div>
+      <div class="col-md-4">
+        {{ form.late_fixed.label(class="form-label") }}
+        {{ form.late_fixed(class="form-control") }}
+      </div>
+      <div class="col-md-4">
+        {{ form.late_mode.label(class="form-label") }}
+        {{ form.late_mode(class="form-select") }}
+      </div>
+    </div>
+  </section>
+
+  <section class="glass mb-3">
+    <h2 class="form-section-title">5. Condiciones</h2>
+    <div class="row g-3">
+      <div class="col-12">
+        {{ form.conditions.label(class="form-label") }}
+        {{ form.conditions(class="form-control", rows=2, placeholder="Condiciones del contrato") }}
+      </div>
+      <div class="col-12">
+        {{ form.observations.label(class="form-label") }}
+        {{ form.observations(class="form-control", rows=2, placeholder="Notas internas") }}
+      </div>
+      <div class="col-12">
+        <div class="form-check accept-box">
+          {{ form.declaration_accepted(class="form-check-input", id="declaration_accepted") }}
+          <label class="form-check-label" for="declaration_accepted">{{ form.declaration_accepted.label.text }}</label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="d-flex flex-wrap gap-2">
+    {{ form.submit(class="btn btn-jdm px-4") }}
+    <a href="{{ url_for('pawn.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+  </div>
+</form>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+(() => {
+  const map = {{ deliverer_map|default({})|tojson }};
+  const customer = document.getElementById("customer_id");
+  const deliverer = document.getElementById("deliverer_id");
+  const same = document.getElementById("same_as_customer");
+  const itemExisting = document.getElementById("item_id");
+  const newFields = ["category_id", "item_brand", "item_model", "item_weight", "item_serial", "item_photo"]
+    .map((id) => document.getElementById(id) || document.querySelector(`[name="${id}"]`));
+
+  const syncDeliverer = () => {
+    if (!customer || !deliverer || !same) return;
+    if (!same.checked) {
+      deliverer.disabled = false;
+      return;
+    }
+    const id = map[String(customer.value)];
+    if (id) deliverer.value = String(id);
+    deliverer.disabled = true;
+  };
+
+  const syncItemMode = () => {
+    const usingExisting = itemExisting && Number(itemExisting.value) > 0;
+    newFields.forEach((el) => {
+      if (!el) return;
+      el.disabled = usingExisting;
+      el.closest(".col-md-4, .col-md-6, .col-12")?.classList.toggle("opacity-50", usingExisting);
+    });
+  };
+
+  customer?.addEventListener("change", syncDeliverer);
+  same?.addEventListener("change", syncDeliverer);
+  itemExisting?.addEventListener("change", syncItemMode);
+  syncDeliverer();
+  syncItemMode();
+
+  document.getElementById("pawnForm")?.addEventListener("submit", () => {
+    if (deliverer) deliverer.disabled = false;
+    newFields.forEach((el) => { if (el) el.disabled = false; });
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,1 @@
+"""Validadores de negocio (se expanden en fases siguientes)."""

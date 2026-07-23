@@ -1,0 +1,56 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+  <div>
+    <h1 class="page-title">{{ customer.full_name }}</h1>
+    <p class="page-subtitle mb-0">{{ customer.code }} · {{ customer.national_id }} · {{ customer.status }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    {% if current_user.has_permission('customers.manage') %}
+    <a class="btn btn-jdm" href="{{ url_for('customers.edit', customer_id=customer.id) }}">Editar</a>
+    {% endif %}
+    {% if current_user.has_permission('deliverers.manage') %}
+    <a class="btn btn-outline-primary" href="{{ url_for('deliverers.create') }}?customer_id={{ customer.id }}">Registrar quien entrega</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card-jdm">
+      <h2 class="h5">Datos</h2>
+      <p class="mb-1"><strong>Teléfono:</strong> {{ customer.phone_primary }}</p>
+      <p class="mb-1"><strong>WhatsApp:</strong> {{ customer.whatsapp or '—' }}</p>
+      <p class="mb-1"><strong>Correo:</strong> {{ customer.email or '—' }}</p>
+      <p class="mb-1"><strong>Dirección:</strong> {{ customer.address or '—' }}</p>
+      <p class="mb-1"><strong>Ciudad:</strong> {{ customer.city or '—' }}</p>
+      <p class="mb-1"><strong>Ocupación:</strong> {{ customer.occupation or '—' }}</p>
+      <p class="mb-0"><strong>Referencia:</strong> {{ customer.reference_name or '—' }} {{ customer.reference_phone or '' }}</p>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card-jdm">
+      <h2 class="h5">Galería</h2>
+      <div class="row g-2">
+        {% for path, label in [
+          (customer.photo_path, 'Cliente'),
+          (customer.document_front_path, 'Documento frente'),
+          (customer.document_back_path, 'Documento reverso'),
+          (customer.signature_path, 'Firma')
+        ] %}
+        <div class="col-6">
+          <div class="small text-muted">{{ label }}</div>
+          {% if path %}
+          <a href="{{ url_for('uploaded_file', filename=path) }}" target="_blank">
+            <img src="{{ url_for('uploaded_file', filename=path) }}" class="img-fluid rounded border" alt="{{ label }}">
+          </a>
+          {% else %}
+          <div class="border rounded p-3 text-muted">Sin imagen</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

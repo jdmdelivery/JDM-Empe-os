@@ -1,0 +1,32 @@
+{% extends "layouts/app.html" %}
+
+{% block content %}
+<div class="mb-3">
+  <h1 class="page-title">{{ title }}</h1>
+  <p class="page-subtitle">Asigne rol, sucursal y credenciales</p>
+</div>
+
+<div class="card-jdm">
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="row g-3">
+      <div class="col-md-4">{{ form.username.label(class="form-label") }}{{ form.username(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.email.label(class="form-label") }}{{ form.email(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.phone.label(class="form-label") }}{{ form.phone(class="form-control") }}</div>
+      <div class="col-md-6">{{ form.first_name.label(class="form-label") }}{{ form.first_name(class="form-control") }}</div>
+      <div class="col-md-6">{{ form.last_name.label(class="form-label") }}{{ form.last_name(class="form-control") }}</div>
+      <div class="col-md-6">{{ form.role_id.label(class="form-label") }}{{ form.role_id(class="form-select") }}</div>
+      <div class="col-md-6">{{ form.branch_id.label(class="form-label") }}{{ form.branch_id(class="form-select") }}</div>
+      <div class="col-md-6">{{ form.password.label(class="form-label") }}{{ form.password(class="form-control", placeholder="Mínimo 8 caracteres") }}</div>
+      <div class="col-md-6">{{ form.password2.label(class="form-label") }}{{ form.password2(class="form-control") }}</div>
+      <div class="col-md-12">{{ form.notes.label(class="form-label") }}{{ form.notes(class="form-control", rows=3) }}</div>
+      <div class="col-md-6 form-check ms-2">{{ form.account_active(class="form-check-input") }} {{ form.account_active.label(class="form-check-label") }}</div>
+      <div class="col-md-6 form-check">{{ form.must_change_password(class="form-check-input") }} {{ form.must_change_password.label(class="form-check-label") }}</div>
+    </div>
+    <div class="mt-4 d-flex gap-2">
+      {{ form.submit(class="btn btn-jdm") }}
+      <a href="{{ url_for('users.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="mb-3">
+  <h1 class="page-title">{{ deliverer.full_name }}</h1>
+  <p class="page-subtitle">{{ deliverer.code }} · Cliente: {{ deliverer.customer.full_name if deliverer.customer else '—' }}</p>
+</div>
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card-jdm">
+      <p><strong>Cédula:</strong> {{ deliverer.national_id }}</p>
+      <p><strong>Teléfono:</strong> {{ deliverer.phone or '—' }}</p>
+      <p><strong>Relación:</strong> {{ deliverer.relationship_to_customer or '—' }}</p>
+      <p><strong>Motivo:</strong> {{ deliverer.delivery_reason or '—' }}</p>
+      <p><strong>Declaración aceptada:</strong> {{ 'Sí' if deliverer.legitimate_origin_accepted else 'No' }}</p>
+      <p class="small text-muted">{{ declaration }}</p>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card-jdm">
+      <h2 class="h5">Galería de evidencia</h2>
+      <div class="row g-2">
+        {% for path, label in [
+          (deliverer.photo_path, 'Persona'),
+          (deliverer.document_front_path, 'Doc. frente'),
+          (deliverer.document_back_path, 'Doc. reverso'),
+          (deliverer.holding_item_photo_path, 'Sosteniendo artículo'),
+          (deliverer.signature_path, 'Firma')
+        ] %}
+        <div class="col-6 col-md-4">
+          <div class="small text-muted">{{ label }}</div>
+          {% if path %}
+          <a href="{{ url_for('uploaded_file', filename=path) }}" target="_blank">
+            <img class="img-fluid rounded border" src="{{ url_for('uploaded_file', filename=path) }}" alt="{{ label }}">
+          </a>
+          {% else %}
+          <div class="border rounded p-3 text-muted">Falta</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

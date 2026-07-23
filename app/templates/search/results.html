@@ -1,0 +1,46 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="mb-3">
+  <h1 class="page-title">Búsqueda global</h1>
+  <p class="page-subtitle">Clientes, personas que entregan y artículos</p>
+</div>
+<form class="row g-2 mb-4" method="get" action="{{ url_for('global_search') }}">
+  <div class="col-md-8"><input class="form-control form-control-lg" name="q" value="{{ q }}" placeholder="Cédula, contrato, serie, IMEI, teléfono..."></div>
+  <div class="col-auto"><button class="btn btn-jdm btn-lg" type="submit">Buscar</button></div>
+</form>
+
+{% if q %}
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card-jdm">
+      <h2 class="h5">Clientes ({{ results.customers|length }})</h2>
+      {% for c in results.customers %}
+      <a class="d-block py-2 border-bottom text-decoration-none" href="{{ url_for('customers.detail', customer_id=c.id) }}">
+        <strong>{{ c.code }}</strong> · {{ c.full_name }}<br><small class="text-muted">{{ c.national_id }} · {{ c.phone_primary }}</small>
+      </a>
+      {% else %}<p class="text-muted mb-0">Sin resultados</p>{% endfor %}
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card-jdm">
+      <h2 class="h5">Quien entrega ({{ results.deliverers|length }})</h2>
+      {% for d in results.deliverers %}
+      <a class="d-block py-2 border-bottom text-decoration-none" href="{{ url_for('deliverers.detail', deliverer_id=d.id) }}">
+        <strong>{{ d.code }}</strong> · {{ d.full_name }}<br><small class="text-muted">{{ d.national_id }}</small>
+      </a>
+      {% else %}<p class="text-muted mb-0">Sin resultados</p>{% endfor %}
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card-jdm">
+      <h2 class="h5">Artículos ({{ results.articles|length }})</h2>
+      {% for i in results.articles %}
+      <a class="d-block py-2 border-bottom text-decoration-none" href="{{ url_for('items.detail', item_id=i.id) }}">
+        <strong>{{ i.code }}</strong> · {{ i.brand or '' }} {{ i.model or '' }}<br><small class="text-muted">Serie {{ i.serial_number or '—' }} · IMEI {{ i.imei or '—' }}</small>
+      </a>
+      {% else %}<p class="text-muted mb-0">Sin resultados</p>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

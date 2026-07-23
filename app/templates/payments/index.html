@@ -1,0 +1,21 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <div><h1 class="page-title">Pagos</h1><p class="page-subtitle mb-0">Recibos con idempotencia</p></div>
+  {% if current_user.has_permission('payments.manage') %}<a class="btn btn-jdm" href="{{ url_for('payments.create') }}">Nuevo pago</a>{% endif %}
+</div>
+<div class="table-jdm table-responsive"><table class="table mb-0">
+<thead><tr><th>Recibo</th><th>Contrato</th><th>Monto</th><th>Método</th><th>Fecha</th><th></th></tr></thead>
+<tbody>
+{% for p in payments %}
+<tr>
+  <td>{{ p.receipt_number }}</td>
+  <td>{{ p.contract.contract_number if p.contract else '—' }}</td>
+  <td>{{ format_money(p.amount, currency_symbol) }}</td>
+  <td>{{ p.method }}</td>
+  <td>{{ format_datetime(p.paid_at) }}</td>
+  <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('payments.receipt', payment_id=p.id) }}" target="_blank">PDF</a></td>
+</tr>
+{% else %}<tr><td colspan="6" class="text-muted p-3">Sin pagos.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h1 class="page-title">Ventas</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{{ url_for('sales.reservations') }}">Reservas</a>
+    {% if current_user.has_permission('sales.manage') %}<a class="btn btn-jdm" href="{{ url_for('sales.create') }}">Nueva venta</a>{% endif %}
+  </div>
+</div>
+<div class="table-jdm table-responsive"><table class="table mb-0">
+<thead><tr><th>Factura</th><th>Total</th><th>Método</th><th>Fecha</th></tr></thead>
+<tbody>
+{% for s in sales %}
+<tr>
+  <td>{{ s.invoice_number }}</td>
+  <td>{{ format_money(s.total, currency_symbol) }}</td>
+  <td>{{ s.payment_method }}</td>
+  <td>{{ format_datetime(s.sold_at) }}</td>
+</tr>
+{% else %}<tr><td colspan="4" class="text-muted p-3">Sin ventas.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

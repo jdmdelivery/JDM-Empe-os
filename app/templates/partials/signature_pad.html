@@ -1,0 +1,8 @@
+<div class="mb-3">
+  <label class="form-label fw-semibold">{{ label|default('Firma digital') }}</label>
+  <canvas id="{{ canvas_id }}" class="signature-pad w-100 border rounded" data-signature-pad data-target-input="{{ input_id }}" style="height:180px;touch-action:none;background:#fff"></canvas>
+  <div class="mt-2 d-flex gap-2">
+    <button type="button" class="btn btn-sm btn-outline-secondary" data-clear-signature="{{ canvas_id }}">Limpiar firma</button>
+  </div>
+  <textarea id="{{ input_id }}" name="{{ field.name }}" class="d-none">{{ field.data or '' }}</textarea>
+</div>

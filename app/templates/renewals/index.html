@@ -1,0 +1,20 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h1 class="page-title">Renovaciones</h1>
+  {% if current_user.has_permission('pawn.manage') %}<a class="btn btn-jdm" href="{{ url_for('renewals.create') }}">Renovar</a>{% endif %}
+</div>
+<div class="table-jdm table-responsive"><table class="table mb-0">
+<thead><tr><th>Número</th><th>Contrato</th><th>Pagado</th><th>Nueva fecha</th><th>%</th></tr></thead>
+<tbody>
+{% for r in renewals %}
+<tr>
+  <td>{{ r.renewal_number }}</td>
+  <td>{{ r.contract.contract_number if r.contract else '—' }}</td>
+  <td>{{ format_money(r.amount_paid, currency_symbol) }}</td>
+  <td>{{ r.new_due_date }}</td>
+  <td>{{ r.percent_applied }}%</td>
+</tr>
+{% else %}<tr><td colspan="5" class="text-muted p-3">Sin renovaciones.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

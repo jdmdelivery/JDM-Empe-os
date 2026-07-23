@@ -1,0 +1,52 @@
+{% extends "layouts/app.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <div>
+    <h1 class="page-title">Usuarios</h1>
+    <p class="page-subtitle mb-0">Empleados, roles y acceso al sistema</p>
+  </div>
+  {% if current_user.has_permission('users.manage') %}
+  <a href="{{ url_for('users.create') }}" class="btn btn-jdm">Nuevo usuario</a>
+  {% endif %}
+</div>
+
+<div class="table-jdm table-responsive">
+  <table class="table align-middle mb-0">
+    <thead>
+      <tr>
+        <th>Usuario</th>
+        <th>Nombre</th>
+        <th>Rol</th>
+        <th>Sucursal</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.username }}<div class="small text-muted">{{ user.email }}</div></td>
+        <td>{{ user.full_name }}</td>
+        <td>{{ user.role.name if user.role else '—' }}</td>
+        <td>{{ user.branch.name if user.branch else '—' }}</td>
+        <td>
+          {% if user.account_active and not user.is_deleted %}
+          <span class="badge text-bg-success badge-status">Activo</span>
+          {% else %}
+          <span class="badge text-bg-secondary badge-status">Inactivo</span>
+          {% endif %}
+        </td>
+        <td class="text-end">
+          {% if current_user.has_permission('users.manage') %}
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('users.edit', user_id=user.id) }}">Editar</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-muted p-3">No hay usuarios.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

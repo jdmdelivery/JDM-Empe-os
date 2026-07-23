@@ -1,0 +1,160 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+  <div>
+    <h1 class="page-title">{{ title }}</h1>
+    <p class="page-subtitle mb-0">Pague solo interés o abone a capital</p>
+  </div>
+  <a href="{{ url_for('payments.index') }}" class="btn btn-outline-secondary">Volver</a>
+</div>
+
+{% if contract %}
+<section class="glass mb-3">
+  <h2 class="form-section-title">Contrato {{ contract.contract_number }}</h2>
+  <div class="row g-3">
+    <div class="col-6 col-md-3">
+      <div class="small text-muted">Cliente</div>
+      <div class="fw-bold">{{ contract.customer.full_name if contract.customer else '—' }}</div>
+      <div class="small">ID: {{ contract.customer.national_id if contract.customer else '—' }}</div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="small text-muted">Interés pendiente</div>
+      <div class="kpi-value" style="font-size:1.25rem" id="balInterest">{{ format_money(contract.interest_balance, currency_symbol) }}</div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="small text-muted">Capital pendiente</div>
+      <div class="kpi-value" style="font-size:1.25rem" id="balCapital">{{ format_money(contract.capital_balance, currency_symbol) }}</div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="small text-muted">Total pendiente</div>
+      <div class="kpi-value" style="font-size:1.25rem" id="balTotal">{{ format_money(contract.pending_total, currency_symbol) }}</div>
+    </div>
+  </div>
+  {% if contract.late_fee_balance and contract.late_fee_balance > 0 %}
+  <div class="mt-2 small text-warning">Mora pendiente: {{ format_money(contract.late_fee_balance, currency_symbol) }}</div>
+  {% endif %}
+</section>
+{% endif %}
+
+<form method="post" class="pawn-form" id="paymentForm">
+  {{ form.hidden_tag() }}
+  <section class="glass mb-3">
+    <h2 class="form-section-title">Tipo de pago</h2>
+    <div class="pay-type-grid mb-3">
+      <button type="button" class="pay-type-btn" data-type="interes" data-suggest="interest">Solo interés</button>
+      <button type="button" class="pay-type-btn" data-type="abono" data-suggest="capital">Abonar a capital</button>
+      <button type="button" class="pay-type-btn" data-type="auto" data-suggest="none">Automático</button>
+      <button type="button" class="pay-type-btn" data-type="total" data-suggest="total">Liquidar todo</button>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-8">
+        {{ form.contract_id.label(class="form-label") }}
+        {{ form.contract_id(class="form-select", id="contract_id") }}
+      </div>
+      <div class="col-md-4">
+        {{ form.payment_type.label(class="form-label") }}
+        {{ form.payment_type(class="form-select", id="payment_type") }}
+      </div>
+      <div class="col-md-4">
+        {{ form.amount.label(class="form-label") }}
+        {{ form.amount(class="form-control", id="amount", placeholder="Monto") }}
+        <div class="small text-muted mt-1" id="amountHint"></div>
+      </div>
+      <div class="col-md-4">
+        {{ form.method.label(class="form-label") }}
+        {{ form.method(class="form-select") }}
+      </div>
+      <div class="col-md-4">
+        {{ form.payer_name.label(class="form-label") }}
+        {{ form.payer_name(class="form-control", placeholder="Nombre de quien paga") }}
+      </div>
+      <div class="col-12">
+        {{ form.notes.label(class="form-label") }}
+        {{ form.notes(class="form-control", rows=2) }}
+      </div>
+      {{ form.idempotency_key(class="d-none") }}
+    </div>
+  </section>
+
+  <section class="glass mb-3">
+    <h2 class="form-section-title">Firma del cliente</h2>
+    <p class="page-subtitle mb-2">El cliente firma al pagar interés o abonar</p>
+    {% set canvas_id = "payment_signature_pad" %}
+    {% set input_id = "signature_data" %}
+    {% set field = form.signature_data %}
+    {% set label = "Firme aquí" %}
+    {% include "partials/signature_pad.html" %}
+  </section>
+
+  <div class="d-flex gap-2">
+    {{ form.submit(class="btn btn-jdm px-4") }}
+    <a href="{{ url_for('payments.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+  </div>
+</form>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="{{ url_for('static', filename='js/capture.js') }}"></script>
+<script>
+(() => {
+  const balances = {{ balances|default({})|tojson }};
+  const typeSelect = document.getElementById("payment_type");
+  const amount = document.getElementById("amount");
+  const hint = document.getElementById("amountHint");
+  const contractSelect = document.getElementById("contract_id");
+
+  const suggest = (kind) => {
+    if (!amount) return;
+    if (kind === "interest" && balances.interest != null) {
+      amount.value = balances.interest;
+      if (hint) hint.textContent = "Sugerido: interés pendiente";
+    } else if (kind === "capital" && balances.capital != null) {
+      if (!amount.value) amount.value = "";
+      if (hint) hint.textContent = "Escriba cuánto abona al capital";
+    } else if (kind === "total" && balances.total != null) {
+      amount.value = balances.total;
+      if (hint) hint.textContent = "Sugerido: total pendiente";
+    } else if (hint) {
+      hint.textContent = "";
+    }
+  };
+
+  document.querySelectorAll(".pay-type-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".pay-type-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      if (typeSelect) typeSelect.value = btn.dataset.type;
+      suggest(btn.dataset.suggest);
+    });
+  });
+
+  // Marca el botón activo según el select
+  const syncButtons = () => {
+    const val = typeSelect?.value;
+    document.querySelectorAll(".pay-type-btn").forEach((b) => {
+      b.classList.toggle("active", b.dataset.type === val);
+    });
+    if (val === "interes") suggest("interest");
+    if (val === "total") suggest("total");
+    if (val === "abono") suggest("capital");
+  };
+  typeSelect?.addEventListener("change", syncButtons);
+  syncButtons();
+
+  contractSelect?.addEventListener("change", () => {
+    const id = contractSelect.value;
+    if (id && Number(id) > 0) {
+      window.location = "{{ url_for('payments.create') }}?contract_id=" + id;
+    }
+  });
+
+  document.getElementById("paymentForm")?.addEventListener("submit", () => {
+    const canvas = document.getElementById("payment_signature_pad");
+    const input = document.getElementById("signature_data");
+    if (canvas && input) {
+      input.value = canvas.toDataURL("image/png");
+    }
+  });
+})();
+</script>
+{% endblock %}

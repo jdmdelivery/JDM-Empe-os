@@ -1,0 +1,63 @@
+{% extends "layouts/app.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <div>
+    <h1 class="page-title">Sucursales</h1>
+    <p class="page-subtitle mb-0">Administración de locales del negocio</p>
+  </div>
+  {% if current_user.has_permission('branches.manage') %}
+  <a href="{{ url_for('branches.create') }}" class="btn btn-jdm">Nueva sucursal</a>
+  {% endif %}
+</div>
+
+<div class="table-jdm table-responsive">
+  <table class="table align-middle mb-0">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th>Ciudad</th>
+        <th>Teléfono</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for branch in branches %}
+      <tr>
+        <td><strong>{{ branch.code }}</strong>{% if branch.is_main %} <span class="badge text-bg-warning">Principal</span>{% endif %}</td>
+        <td>{{ branch.name }}</td>
+        <td>{{ branch.city or '—' }}</td>
+        <td>{{ branch.phone or '—' }}</td>
+        <td>
+          {% if branch.is_active %}
+          <span class="badge text-bg-success badge-status">Activa</span>
+          {% else %}
+          <span class="badge text-bg-secondary badge-status">Inactiva</span>
+          {% endif %}
+        </td>
+        <td class="text-end">
+          {% if current_user.has_permission('branches.manage') %}
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('branches.edit', branch_id=branch.id) }}">Editar</a>
+          {% if branch.is_active and not branch.is_main %}
+          <form class="d-inline" method="post" action="{{ url_for('branches.deactivate', branch_id=branch.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-outline-danger" data-confirm="¿Desactivar esta sucursal?" type="submit">Desactivar</button>
+          </form>
+          {% elif not branch.is_active %}
+          <form class="d-inline" method="post" action="{{ url_for('branches.activate', branch_id=branch.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-outline-success" type="submit">Activar</button>
+          </form>
+          {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-muted p-3">No hay sucursales registradas.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

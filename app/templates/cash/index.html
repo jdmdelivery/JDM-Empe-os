@@ -1,0 +1,50 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<h1 class="page-title">Caja</h1>
+{% if not session %}
+<div class="card-jdm" style="max-width:480px">
+  <p class="text-muted">No hay caja abierta. No opere sin apertura salvo autorización.</p>
+  {% if current_user.has_permission('cash.manage') %}
+  <form method="post">{{ open_form.hidden_tag() }}
+    {{ open_form.opening_amount.label(class="form-label") }}{{ open_form.opening_amount(class="form-control mb-3") }}
+    {{ open_form.submit(class="btn btn-jdm") }}
+  </form>
+  {% endif %}
+</div>
+{% else %}
+<div class="row g-3 mb-3">
+  <div class="col-md-4"><div class="card-jdm tone-gold"><div class="text-muted">Disponible</div><div class="kpi-value">{{ format_money(balance, currency_symbol) }}</div></div></div>
+  <div class="col-md-4"><div class="card-jdm"><div class="text-muted">Apertura</div><div class="kpi-value">{{ format_money(session.opening_amount, currency_symbol) }}</div></div></div>
+  <div class="col-md-4"><div class="card-jdm"><div class="text-muted">Estado</div><div class="kpi-value">{{ session.status }}</div></div></div>
+</div>
+{% if current_user.has_permission('cash.manage') %}
+<div class="row g-3">
+  <div class="col-lg-6"><div class="card-jdm">
+    <h2 class="h5">Movimiento</h2>
+    <form method="post">{{ move_form.hidden_tag() }}
+      {{ move_form.movement_type.label(class="form-label") }}{{ move_form.movement_type(class="form-select mb-2") }}
+      {{ move_form.concept.label(class="form-label") }}{{ move_form.concept(class="form-control mb-2") }}
+      {{ move_form.amount.label(class="form-label") }}{{ move_form.amount(class="form-control mb-2") }}
+      {{ move_form.method.label(class="form-label") }}{{ move_form.method(class="form-select mb-2") }}
+      {{ move_form.submit(class="btn btn-jdm") }}
+    </form>
+  </div></div>
+  <div class="col-lg-6"><div class="card-jdm">
+    <h2 class="h5">Cierre / arqueo</h2>
+    <form method="post">{{ close_form.hidden_tag() }}
+      {{ close_form.closing_amount.label(class="form-label") }}{{ close_form.closing_amount(class="form-control mb-2") }}
+      {{ close_form.notes.label(class="form-label") }}{{ close_form.notes(class="form-control mb-2", rows=2) }}
+      {{ close_form.submit(class="btn btn-danger") }}
+    </form>
+  </div></div>
+</div>
+{% endif %}
+<div class="table-jdm table-responsive mt-3"><table class="table mb-0">
+<thead><tr><th>Tipo</th><th>Concepto</th><th>Monto</th><th>Método</th><th>Fecha</th></tr></thead>
+<tbody>
+{% for m in session.movements %}
+<tr><td>{{ m.movement_type }}</td><td>{{ m.concept }}</td><td>{{ format_money(m.amount, currency_symbol) }}</td><td>{{ m.method }}</td><td>{{ format_datetime(m.moved_at) }}</td></tr>
+{% endfor %}
+</tbody></table></div>
+{% endif %}
+{% endblock %}

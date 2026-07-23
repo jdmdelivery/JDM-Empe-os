@@ -1,0 +1,35 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <div>
+    <h1 class="page-title">Persona que entrega</h1>
+    <p class="page-subtitle mb-0">Identificación obligatoria de quien lleva el artículo</p>
+  </div>
+  {% if current_user.has_permission('deliverers.manage') %}
+  <a href="{{ url_for('deliverers.create') }}" class="btn btn-jdm">Nueva entrega</a>
+  {% endif %}
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-6"><input class="form-control" name="q" value="{{ q }}" placeholder="Nombre, cédula, código..."></div>
+  <div class="col-auto"><button class="btn btn-jdm" type="submit">Buscar</button></div>
+</form>
+<div class="table-jdm table-responsive">
+  <table class="table align-middle mb-0">
+    <thead><tr><th>Código</th><th>Nombre</th><th>Cédula</th><th>Cliente</th><th>Fecha</th><th></th></tr></thead>
+    <tbody>
+      {% for d in deliverers %}
+      <tr>
+        <td><strong>{{ d.code }}</strong></td>
+        <td>{{ d.full_name }}{% if d.is_same_as_customer %} <span class="badge text-bg-info">Cliente</span>{% endif %}</td>
+        <td>{{ d.national_id }}</td>
+        <td>{{ d.customer.full_name if d.customer else '—' }}</td>
+        <td>{{ format_datetime(d.received_at) }}</td>
+        <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('deliverers.detail', deliverer_id=d.id) }}">Ver</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-muted p-3">Sin registros.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

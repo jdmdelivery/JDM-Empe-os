@@ -1,0 +1,44 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+  <div>
+    <h1 class="page-title">{{ item.code }}</h1>
+    <p class="page-subtitle mb-0">{{ item.brand or '' }} {{ item.model or '' }} · {{ item.status }}</p>
+  </div>
+  {% if current_user.has_permission('items.manage') %}
+  <a class="btn btn-jdm" href="{{ url_for('items.edit', item_id=item.id) }}">Editar</a>
+  {% endif %}
+</div>
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card-jdm">
+      <p><strong>Categoría:</strong> {{ item.category.name if item.category else '—' }}</p>
+      <p><strong>Serie:</strong> {{ item.serial_number or '—' }}</p>
+      <p><strong>IMEI:</strong> {{ item.imei or '—' }}</p>
+      <p><strong>Chasis:</strong> {{ item.chassis_number or '—' }}</p>
+      <p><strong>Placa:</strong> {{ item.plate_number or '—' }}</p>
+      <p><strong>Valor estimado:</strong> {{ format_money(item.estimated_value or 0, currency_symbol) }}</p>
+      <p><strong>Ubicación:</strong> {{ item.location or '—' }} / {{ item.shelf or '—' }}</p>
+      <p><strong>Cliente:</strong> {{ item.customer.full_name if item.customer else '—' }}</p>
+      <p><strong>Quien entrega:</strong> {{ item.deliverer.full_name if item.deliverer else '—' }}</p>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card-jdm">
+      <h2 class="h5">Galería</h2>
+      <div class="row g-2">
+        {% for img in item.images if not img.is_deleted %}
+        <div class="col-6 col-md-4">
+          <div class="small text-muted">{{ img.image_type }}</div>
+          <a href="{{ url_for('uploaded_file', filename=img.file_path) }}" target="_blank">
+            <img class="img-fluid rounded border" src="{{ url_for('uploaded_file', filename=img.file_path) }}" alt="{{ img.image_type }}">
+          </a>
+        </div>
+        {% else %}
+        <div class="col-12 text-muted">Sin fotografías registradas.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

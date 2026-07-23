@@ -1,0 +1,20 @@
+{# Uso: {% include "partials/camera_field.html" with context %}
+   requiere: field, label, prefer ("user"|"environment")
+#}
+<div class="camera-widget mb-3" data-camera-widget data-prefer="{{ prefer|default('environment') }}">
+  <label class="form-label fw-semibold">{{ label }}</label>
+  <div class="d-flex flex-wrap gap-2 mb-2">
+    <button type="button" class="btn btn-sm btn-outline-primary" data-open-camera>Abrir cámara</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" data-front-camera>Cámara frontal</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" data-rear-camera>Cámara trasera</button>
+    <button type="button" class="btn btn-sm btn-success" data-capture>Tomar fotografía</button>
+    <button type="button" class="btn btn-sm btn-warning" data-retake>Repetir</button>
+    <label class="btn btn-sm btn-outline-dark mb-0">
+      Subir desde galería
+      {{ field(class="d-none", accept="image/*") }}
+    </label>
+  </div>
+  <video class="camera-video w-100 rounded border mb-2" playsinline muted></video>
+  <canvas class="d-none"></canvas>
+  <img data-preview class="img-fluid rounded border d-none" alt="Vista previa">
+</div>

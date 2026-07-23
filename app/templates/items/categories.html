@@ -1,0 +1,24 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="mb-3">
+  <h1 class="page-title">Categorías de artículos</h1>
+  <p class="page-subtitle">Catálogo configurable del negocio</p>
+</div>
+<div class="table-jdm table-responsive">
+  <table class="table mb-0">
+    <thead><tr><th>Código</th><th>Nombre</th><th>IMEI</th><th>Serie</th><th>Vehículo</th><th>Estado</th></tr></thead>
+    <tbody>
+      {% for c in categories %}
+      <tr>
+        <td>{{ c.code }}</td>
+        <td>{{ c.name }}</td>
+        <td>{{ 'Sí' if c.requires_imei else 'No' }}</td>
+        <td>{{ 'Sí' if c.requires_serial else 'No' }}</td>
+        <td>{{ 'Sí' if c.is_vehicle else 'No' }}</td>
+        <td>{{ 'Activa' if c.is_active else 'Inactiva' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

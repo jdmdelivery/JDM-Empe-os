@@ -1,0 +1,34 @@
+{% extends "layouts/app.html" %}
+
+{% block content %}
+<div class="mb-3">
+  <h1 class="page-title">{{ title }}</h1>
+  <p class="page-subtitle">Complete los datos de la sucursal</p>
+</div>
+
+<div class="card-jdm">
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="row g-3">
+      <div class="col-md-4">{{ form.code.label(class="form-label") }}{{ form.code(class="form-control") }}</div>
+      <div class="col-md-8">{{ form.name.label(class="form-label") }}{{ form.name(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.phone.label(class="form-label") }}{{ form.phone(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.whatsapp.label(class="form-label") }}{{ form.whatsapp(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.email.label(class="form-label") }}{{ form.email(class="form-control") }}</div>
+      <div class="col-md-8">{{ form.address.label(class="form-label") }}{{ form.address(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.sector.label(class="form-label") }}{{ form.sector(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.city.label(class="form-label") }}{{ form.city(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.province.label(class="form-label") }}{{ form.province(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.country.label(class="form-label") }}{{ form.country(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.rnc.label(class="form-label") }}{{ form.rnc(class="form-control") }}</div>
+      <div class="col-md-12">{{ form.notes.label(class="form-label") }}{{ form.notes(class="form-control", rows=3) }}</div>
+      <div class="col-md-6 form-check ms-2">{{ form.is_active(class="form-check-input") }} {{ form.is_active.label(class="form-check-label") }}</div>
+      <div class="col-md-6 form-check">{{ form.is_main(class="form-check-input") }} {{ form.is_main.label(class="form-check-label") }}</div>
+    </div>
+    <div class="mt-4 d-flex gap-2">
+      {{ form.submit(class="btn btn-jdm") }}
+      <a href="{{ url_for('branches.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

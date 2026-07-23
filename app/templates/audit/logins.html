@@ -1,0 +1,44 @@
+{% extends "layouts/app.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="page-title">Historial de acceso</h1>
+    <p class="page-subtitle mb-0">Intentos de inicio de sesión</p>
+  </div>
+  <a href="{{ url_for('audit.index') }}" class="btn btn-outline-secondary">Volver a auditoría</a>
+</div>
+
+<div class="table-jdm table-responsive">
+  <table class="table align-middle mb-0">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Usuario</th>
+        <th>Resultado</th>
+        <th>IP</th>
+        <th>Mensaje</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in pagination.items %}
+      <tr>
+        <td>{{ format_datetime(item.created_at) }}</td>
+        <td>{{ item.username_attempted or '—' }}</td>
+        <td>
+          {% if item.success %}
+          <span class="badge text-bg-success">Exitoso</span>
+          {% else %}
+          <span class="badge text-bg-danger">Fallido</span>
+          {% endif %}
+        </td>
+        <td>{{ item.ip_address or '—' }}</td>
+        <td>{{ item.message or '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="text-muted p-3">Sin registros.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

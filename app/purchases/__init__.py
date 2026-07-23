@@ -1,0 +1,4 @@
+from flask import Blueprint
+
+purchases_bp = Blueprint("purchases", __name__, url_prefix="/purchases")
+from app.purchases import routes  # noqa: E402, F401

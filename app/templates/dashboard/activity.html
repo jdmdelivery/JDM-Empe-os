@@ -1,0 +1,47 @@
+{% extends "layouts/app.html" %}
+
+{% block content %}
+<div class="ios-page-header">
+  <div>
+    <p class="ios-eyebrow">Historial</p>
+    <h1 class="page-title">Actividad reciente</h1>
+    <p class="page-subtitle mb-0">Últimos movimientos del sistema</p>
+  </div>
+  {% if current_user.has_permission('audit.view') %}
+  <a class="btn btn-outline-jdm" href="{{ url_for('audit.index') }}">Auditoría completa</a>
+  {% endif %}
+</div>
+
+<section class="ios-list glass">
+  {% for item in recent_audits %}
+  <div class="ios-list-row">
+    <div class="ios-list-main">
+      <div class="ios-list-title">{{ item.module }} · {{ item.action }}</div>
+      <div class="ios-list-sub">
+        {{ item.user.username if item.user else '—' }}
+        · {{ item.reason or item.record_type or '—' }}
+      </div>
+    </div>
+    <div class="ios-list-meta">{{ format_datetime(item.created_at) }}</div>
+  </div>
+  {% else %}
+  <div class="empty-state">Aún no hay actividad.</div>
+  {% endfor %}
+</section>
+
+{% if pagination and pagination.pages > 1 %}
+<nav class="mt-3">
+  <ul class="pagination justify-content-center">
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if p %}
+      <li class="page-item {% if p == pagination.page %}active{% endif %}">
+        <a class="page-link" href="{{ url_for('dashboard.activity', page=p) }}">{{ p }}</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

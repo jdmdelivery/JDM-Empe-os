@@ -1,0 +1,33 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <div><h1 class="page-title">Reportes</h1><p class="page-subtitle mb-0">Totales en {{ currency_symbol }}</p></div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-outline-secondary" href="{{ url_for('reports.export_csv', kind='payments') }}">CSV pagos</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('reports.export_csv', kind='contracts') }}">CSV contratos</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('reports.export_xlsx') }}">Excel</a>
+    <form method="post" action="{{ url_for('reports.notify_due') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-outline-jdm">Encolar avisos de vencimiento</button>
+    </form>
+  </div>
+</div>
+<div class="row g-3">
+  {% for title, value in [
+    ('Capital prestado', summary.capital_loaned),
+    ('Cobrado (pagos)', summary.interest_collected),
+    ('Ventas', summary.sales_total),
+    ('Compras', summary.purchases_total),
+    ('Gastos', summary.expenses_total),
+    ('Ganancia estimada', summary.profit_estimate)
+  ] %}
+  <div class="col-md-4 col-xl-2"><div class="card-jdm"><div class="small text-muted">{{ title }}</div><div class="kpi-value" style="font-size:1.1rem">{{ format_money(value, currency_symbol) }}</div></div></div>
+  {% endfor %}
+</div>
+<div class="row g-3 mt-1">
+  <div class="col-md-3"><div class="card-jdm">Contratos activos: <strong>{{ summary.active_contracts }}</strong></div></div>
+  <div class="col-md-3"><div class="card-jdm">Vencidos/gracia: <strong>{{ summary.expired_contracts }}</strong></div></div>
+  <div class="col-md-3"><div class="card-jdm">Disponibles venta: <strong>{{ summary.available_items }}</strong></div></div>
+  <div class="col-md-3"><div class="card-jdm">Clientes: <strong>{{ summary.customers }}</strong></div></div>
+</div>
+{% endblock %}

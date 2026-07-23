@@ -1,0 +1,20 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h1 class="page-title">Compras directas</h1>
+  {% if current_user.has_permission('purchases.manage') %}<a class="btn btn-jdm" href="{{ url_for('purchases.create') }}">Nueva compra</a>{% endif %}
+</div>
+<div class="table-jdm table-responsive"><table class="table mb-0">
+<thead><tr><th>Número</th><th>Cliente</th><th>Pagado</th><th>Estado</th><th>Fecha</th></tr></thead>
+<tbody>
+{% for p in purchases %}
+<tr>
+  <td>{{ p.purchase_number }}</td>
+  <td>{{ p.customer.full_name if p.customer else '—' }}</td>
+  <td>{{ format_money(p.paid_price, currency_symbol) }}</td>
+  <td>{{ p.status }}</td>
+  <td>{{ format_datetime(p.purchased_at) }}</td>
+</tr>
+{% else %}<tr><td colspan="5" class="text-muted p-3">Sin compras.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

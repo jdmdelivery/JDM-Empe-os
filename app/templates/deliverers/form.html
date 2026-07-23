@@ -1,0 +1,72 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="mb-3">
+  <h1 class="page-title">{{ title }}</h1>
+  <p class="page-subtitle">No se puede completar la operación sin identificar correctamente a quien entrega.</p>
+</div>
+<div class="card-jdm">
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="row g-3 mb-3">
+      <div class="col-md-8">{{ form.customer_id.label(class="form-label") }}{{ form.customer_id(class="form-select") }}</div>
+      <div class="col-md-4 form-check align-self-end ms-2">{{ form.is_same_as_customer(class="form-check-input") }} {{ form.is_same_as_customer.label(class="form-check-label") }}</div>
+    </div>
+
+    <div id="otherPersonFields" class="row g-3 mb-3">
+      <div class="col-md-6">{{ form.first_name.label(class="form-label") }}{{ form.first_name(class="form-control") }}</div>
+      <div class="col-md-6">{{ form.last_name.label(class="form-label") }}{{ form.last_name(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.national_id.label(class="form-label") }}{{ form.national_id(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.passport.label(class="form-label") }}{{ form.passport(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.phone.label(class="form-label") }}{{ form.phone(class="form-control") }}</div>
+      <div class="col-md-8">{{ form.address.label(class="form-label") }}{{ form.address(class="form-control") }}</div>
+      <div class="col-md-4">{{ form.relationship_to_customer.label(class="form-label") }}{{ form.relationship_to_customer(class="form-control") }}</div>
+      <div class="col-12">{{ form.delivery_reason.label(class="form-label") }}{{ form.delivery_reason(class="form-control", rows=2) }}</div>
+    </div>
+
+    <h2 class="h5">Fotografías obligatorias</h2>
+    {% set field = form.photo %}{% set label = "Foto de la persona que entrega" %}{% set prefer = "user" %}
+    {% include "partials/camera_field.html" %}
+    {% set field = form.document_front %}{% set label = "Foto frontal del documento" %}{% set prefer = "environment" %}
+    {% include "partials/camera_field.html" %}
+    {% set field = form.document_back %}{% set label = "Foto trasera del documento" %}{% set prefer = "environment" %}
+    {% include "partials/camera_field.html" %}
+    {% set field = form.holding_item_photo %}{% set label = "Foto de la persona sosteniendo el artículo" %}{% set prefer = "environment" %}
+    {% include "partials/camera_field.html" %}
+
+    <div class="alert alert-secondary">
+      <strong>Declaración de procedencia legítima</strong>
+      <p class="mb-0 small">{{ declaration }}</p>
+    </div>
+    <div class="form-check mb-3">
+      {{ form.legitimate_origin_accepted(class="form-check-input") }}
+      {{ form.legitimate_origin_accepted.label(class="form-check-label") }}
+    </div>
+
+    {% set canvas_id = "delivererSignature" %}
+    {% set input_id = "signature_data" %}
+    {% set field = form.signature_data %}
+    {% set label = "Firma de quien entrega" %}
+    {% include "partials/signature_pad.html" %}
+
+    {{ form.observations.label(class="form-label") }}
+    {{ form.observations(class="form-control mb-3", rows=2) }}
+
+    <div class="border rounded p-3 mb-3">
+      <div class="form-check">{{ form.authorize_missing_photos(class="form-check-input") }} {{ form.authorize_missing_photos.label(class="form-check-label") }}</div>
+      {{ form.missing_photos_reason(class="form-control mt-2", rows=2, placeholder="Motivo obligatorio si autoriza excepción") }}
+    </div>
+
+    {{ form.submit(class="btn btn-jdm") }}
+    <a href="{{ url_for('deliverers.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/capture.js') }}"></script>
+<script>
+  const same = document.getElementById('is_same_as_customer');
+  const box = document.getElementById('otherPersonFields');
+  const sync = () => { if (box) box.style.display = same?.checked ? 'none' : ''; };
+  same?.addEventListener('change', sync); sync();
+</script>
+{% endblock %}

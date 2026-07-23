@@ -1,0 +1,27 @@
+{% extends "layouts/app.html" %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <div><h1 class="page-title">Inventario</h1>
+  <p class="page-subtitle mb-0">Invertido {{ format_money(invested, currency_symbol) }} · Potencial {{ format_money(potential, currency_symbol) }}</p></div>
+  <a class="btn btn-outline-secondary" href="{{ url_for('inventory.transfers') }}">Transferencias</a>
+</div>
+<form class="mb-3" method="get"><select name="status" class="form-select w-auto d-inline-block" onchange="this.form.submit()">
+<option value="">Todos</option>
+{% for s in ['empenado','disponible_venta','autorizado_inventario','reservado','vendido','en_reparacion','transferido','bloqueado'] %}
+<option value="{{ s }}" {% if status==s %}selected{% endif %}>{{ s }}</option>
+{% endfor %}
+</select></form>
+<div class="table-jdm table-responsive"><table class="table mb-0">
+<thead><tr><th>Código</th><th>Artículo</th><th>Estado</th><th>Ubicación</th><th>Valor</th></tr></thead>
+<tbody>
+{% for i in items %}
+<tr>
+  <td><a href="{{ url_for('items.detail', item_id=i.id) }}">{{ i.code }}</a></td>
+  <td>{{ i.brand or '' }} {{ i.model or '' }}</td>
+  <td>{{ i.status }}</td>
+  <td>{{ i.location or '—' }} / {{ i.shelf or '—' }}</td>
+  <td>{{ format_money(i.sale_price or i.estimated_value or 0, currency_symbol) }}</td>
+</tr>
+{% else %}<tr><td colspan="5" class="text-muted p-3">Sin artículos.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}
