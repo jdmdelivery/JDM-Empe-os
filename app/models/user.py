@@ -121,4 +121,8 @@ class User(UserMixin, db.Model, TimestampMixin, SoftDeleteMixin):
 def load_user(user_id: str) -> User | None:
     if not user_id:
         return None
-    return db.session.get(User, int(user_id))
+    try:
+        return db.session.get(User, int(user_id))
+    except Exception:
+        # BD no migrada o sesión inválida (común en el primer deploy de Render)
+        return None

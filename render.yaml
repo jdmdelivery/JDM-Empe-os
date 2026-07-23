@@ -4,9 +4,11 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn "run:app" --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    startCommand: flask db upgrade && python scripts/create_superadmin.py && gunicorn "run:app" --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     healthCheckPath: /healthz
     envVars:
+      - key: FLASK_APP
+        value: run.py
       - key: FLASK_ENV
         value: production
       - key: SECRET_KEY
@@ -25,6 +27,12 @@ services:
         value: America/Santo_Domingo
       - key: PYTHON_VERSION
         value: "3.11.11"
+      - key: SUPERADMIN_USERNAME
+        sync: false
+      - key: SUPERADMIN_EMAIL
+        sync: false
+      - key: SUPERADMIN_PASSWORD
+        sync: false
 
 databases:
   - name: jdm-empenos-db
