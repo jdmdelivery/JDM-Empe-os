@@ -98,6 +98,7 @@ def ensure_superadmin(
     first_name: str = "Super",
     last_name: str = "Administrador",
     must_change_password: bool = True,
+    update_password: bool = False,
 ) -> User:
     seed_permissions_and_roles()
     seed_default_settings()
@@ -122,6 +123,13 @@ def ensure_superadmin(
         )
         user.set_password(password)
         db.session.add(user)
+        db.session.commit()
+    elif update_password:
+        user.set_password(password)
+        user.role_id = role.id
+        user.account_active = True
+        user.must_change_password = must_change_password
+        user.is_deleted = False
         db.session.commit()
     return user
 

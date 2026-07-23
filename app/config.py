@@ -27,7 +27,7 @@ class Config:
     """Configuración base."""
 
     APP_NAME = os.getenv("BUSINESS_NAME", "JDM Empeños")
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-me")
+    SECRET_KEY = os.getenv("SECRET_KEY") or "dev-only-change-me"
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
@@ -88,6 +88,10 @@ class Config:
                 database_url = database_url.replace(
                     "postgresql+psycopg2://", "postgresql+psycopg://", 1
                 )
+            # Render PostgreSQL requiere SSL
+            if "postgresql+psycopg://" in database_url and "sslmode=" not in database_url:
+                sep = "&" if "?" in database_url else "?"
+                database_url = f"{database_url}{sep}sslmode=require"
             cls_obj.SQLALCHEMY_DATABASE_URI = database_url
         else:
             instance_dir = BASE_DIR / "instance"

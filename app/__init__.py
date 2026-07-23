@@ -36,6 +36,15 @@ def create_app(config_name: str | None = None) -> Flask:
     _register_error_handlers(app)
     register_security_headers(app)
 
+    # En producción, asegurar esquema y admin aunque falle el Start Command
+    if (config_name or os.getenv("FLASK_ENV") or "").lower() == "production":
+        try:
+            from app.services.bootstrap_service import bootstrap_database
+
+            bootstrap_database(app)
+        except Exception:
+            app.logger.exception("Bootstrap de base de datos falló al iniciar")
+
     @app.route("/")
     def home():
         if current_user.is_authenticated:
@@ -45,6 +54,16 @@ def create_app(config_name: str | None = None) -> Flask:
     @app.route("/healthz")
     def healthz():
         return {"status": "ok", "service": "JDM Empeños"}, 200
+
+    @app.route("/readyz")
+    def readyz():
+        from sqlalchemy import text
+
+        try:
+            db.session.execute(text("SELECT 1"))
+            return {"status": "ready", "database": "ok"}, 200
+        except Exception as exc:
+            return {"status": "not_ready", "database": str(exc.__class__.__name__)}, 503
 
     @app.route("/uploads/<path:filename>")
     @login_required
@@ -213,4 +232,8 @@ def _register_error_handlers(app: Flask) -> None:
 
     @app.errorhandler(500)
     def server_error(error):  # type: ignore[no-untyped-def]
-        return render_template("errors/500.html", title="Error del servidor"), 500
+        app.logger.exception("Error 500: %s", error)
+        try:
+            return render_template("errors/500.html", title="Error del servidor"), 500
+        except Exception:
+            return "Error del servidor", 500

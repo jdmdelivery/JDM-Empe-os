@@ -23,11 +23,19 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
-        ok, message, _user = authenticate(
-            form.username.data or "",
-            form.password.data or "",
-            remember=bool(form.remember.data),
-        )
+        try:
+            ok, message, _user = authenticate(
+                form.username.data or "",
+                form.password.data or "",
+                remember=bool(form.remember.data),
+            )
+        except Exception:
+            db.session.rollback()
+            flash(
+                "La base de datos no está lista. Espere un minuto y vuelva a intentar.",
+                "danger",
+            )
+            return render_template("auth/login.html", form=form, title="Iniciar sesión")
         if ok:
             flash(message, "success")
             next_url = request.args.get("next")
