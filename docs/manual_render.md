@@ -1,6 +1,15 @@
 # Manual de despliegue en Render — JDM Empeños
 
-## 1. Preparación
+## 0. Versión de Python
+
+En Environment de Render agregue:
+
+| Variable | Valor |
+|----------|-------|
+| `PYTHON_VERSION` | `3.11.11` |
+
+También hay un archivo `.python-version` en el repo. Sin esto, Render puede usar Python 3.14 y fallar con SQLAlchemy.
+
 
 - Repositorio Git con el código
 - Cuenta en Render

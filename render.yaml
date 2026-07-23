@@ -24,7 +24,7 @@ services:
       - key: BUSINESS_TIMEZONE
         value: America/Santo_Domingo
       - key: PYTHON_VERSION
-        value: "3.11.9"
+        value: "3.11.11"
 
 databases:
   - name: jdm-empenos-db
