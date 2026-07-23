@@ -96,10 +96,6 @@ def index():
         if session:
             cash_value = session_balance(session)
 
-    from flask import url_for
-
-    from flask import url_for
-
     cards = [
         {
             "title": "Capital prestado hoy",
