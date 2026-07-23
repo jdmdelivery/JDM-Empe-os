@@ -1,5 +1,111 @@
-{% extends "layouts/app.html" %}
-{% block content %}
+{% extends "layouts/base.html" %}
+
+{% block title %}Recibo {{ payment.receipt_number }}{% endblock %}
+
+{% block head %}
+<style>
+  body { background: #f3f4f6 !important; color: #111 !important; }
+  .receipt-screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 1rem 2rem;
+  }
+  .receipt-toolbar {
+    width: min(420px, 100%);
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.85rem;
+  }
+  .receipt-toolbar .btn { flex: 1; }
+  .receipt-paper {
+    width: min(420px, 100%);
+    background: #fff;
+    color: #111;
+    border-radius: 12px;
+    padding: 1.25rem 1.15rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    font-size: 0.95rem;
+    line-height: 1.35;
+  }
+  .receipt-brand {
+    text-align: center;
+    margin-bottom: 0.85rem;
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 0.75rem;
+  }
+  .receipt-brand h1 {
+    margin: 0.2rem 0 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #111;
+  }
+  .receipt-brand .code {
+    font-size: 0.8rem;
+    color: #555;
+  }
+  .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 0.35rem 0;
+  }
+  .receipt-row span:last-child { font-weight: 700; text-align: right; }
+  .receipt-section {
+    margin-top: 0.85rem;
+    padding-top: 0.65rem;
+    border-top: 1px dashed #ccc;
+  }
+  .receipt-section h2 {
+    margin: 0 0 0.45rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #555;
+  }
+  .receipt-sign {
+    margin-top: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    min-height: 90px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+  .receipt-sign img {
+    max-width: 100%;
+    max-height: 140px;
+    object-fit: contain;
+  }
+  .receipt-foot {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.78rem;
+    color: #666;
+  }
+
+  @media print {
+    @page { margin: 8mm; size: auto; }
+    html, body {
+      background: #fff !important;
+      color: #000 !important;
+    }
+    .no-print { display: none !important; }
+    .receipt-screen { padding: 0; display: block; }
+    .receipt-paper {
+      width: 100%;
+      max-width: none;
+      box-shadow: none;
+      border-radius: 0;
+      padding: 0;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block body %}
 {% set type_labels = {
   'interes': 'Solo interés',
   'solo_interes': 'Solo interés',
@@ -18,40 +124,55 @@
   'mora': 'Mora',
   'cargos': 'Cargos'
 } %}
-<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-  <div>
-    <h1 class="page-title">Recibo {{ payment.receipt_number }}</h1>
-    <p class="page-subtitle mb-0">{{ type_labels.get(payment.payment_type, payment.payment_type) }} · {{ payment.method }}</p>
-  </div>
-  <div class="d-flex gap-2">
-    <button class="btn btn-jdm" onclick="window.print()">Imprimir</button>
+{# Consumir flashes para que no aparezcan en el recibo #}
+{% set _ = get_flashed_messages() %}
+
+<div class="receipt-screen">
+  <div class="receipt-toolbar no-print">
+    <button class="btn btn-jdm" type="button" onclick="window.print()">Imprimir</button>
     <a class="btn btn-outline-secondary" href="{{ url_for('payments.index') }}">Volver</a>
   </div>
+
+  <article class="receipt-paper" id="recibo">
+    <div class="receipt-brand">
+      <div class="code">JDM Empeños</div>
+      <h1>Recibo {{ payment.receipt_number }}</h1>
+      <div class="code">{{ type_labels.get(payment.payment_type, payment.payment_type) }} · {{ payment.method }}</div>
+      <div class="code">{{ format_datetime(payment.paid_at) }}</div>
+    </div>
+
+    <div class="receipt-row"><span>Contrato</span><span>{{ payment.contract.contract_number if payment.contract else '—' }}</span></div>
+    <div class="receipt-row"><span>Cliente</span><span>{{ payment.contract.customer.full_name if payment.contract and payment.contract.customer else '—' }}</span></div>
+    <div class="receipt-row"><span>Monto pagado</span><span>{{ format_money(payment.amount, currency_symbol) }}</span></div>
+    <div class="receipt-row"><span>Saldo anterior</span><span>{{ format_money(payment.previous_balance, currency_symbol) }}</span></div>
+    <div class="receipt-row"><span>Saldo nuevo</span><span>{{ format_money(payment.new_balance, currency_symbol) }}</span></div>
+    <div class="receipt-row"><span>Quién pagó</span><span>{{ payment.payer_name or (payment.contract.customer.full_name if payment.contract and payment.contract.customer else '—') }}</span></div>
+
+    {% if payment.allocations %}
+    <div class="receipt-section">
+      <h2>Aplicado a</h2>
+      {% for row in payment.allocations %}
+      <div class="receipt-row"><span>{{ concept_labels.get(row.concept, row.concept) }}</span><span>{{ format_money(row.amount, currency_symbol) }}</span></div>
+      {% endfor %}
+      {% if payment.contract %}
+      <div class="receipt-row"><span>Capital pendiente</span><span>{{ format_money(payment.contract.capital_balance, currency_symbol) }}</span></div>
+      <div class="receipt-row"><span>Interés pendiente</span><span>{{ format_money(payment.contract.interest_balance, currency_symbol) }}</span></div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="receipt-section">
+      <h2>Firma del cliente</h2>
+      <div class="receipt-sign">
+        {% if signature %}
+        <img src="/uploads/{{ signature.file_path }}" alt="Firma del cliente">
+        {% else %}
+        <span style="color:#999">Sin firma</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="receipt-foot">Gracias por su pago · {{ app_name }}</div>
+  </article>
 </div>
-
-<section class="glass" style="max-width:520px">
-  <p class="mb-1"><strong>Contrato:</strong> {{ payment.contract.contract_number if payment.contract else '—' }}</p>
-  <p class="mb-1"><strong>Cliente:</strong> {{ payment.contract.customer.full_name if payment.contract and payment.contract.customer else '—' }}</p>
-  <p class="mb-1"><strong>Monto pagado:</strong> {{ format_money(payment.amount, currency_symbol) }}</p>
-  <p class="mb-1"><strong>Saldo total anterior:</strong> {{ format_money(payment.previous_balance, currency_symbol) }}</p>
-  <p class="mb-1"><strong>Saldo total nuevo:</strong> {{ format_money(payment.new_balance, currency_symbol) }}</p>
-  <p class="mb-3"><strong>Quién pagó:</strong> {{ payment.payer_name or (payment.contract.customer.full_name if payment.contract and payment.contract.customer else '—') }}</p>
-
-  {% if payment.allocations %}
-  <h2 class="form-section-title">Aplicado a</h2>
-  {% for row in payment.allocations %}
-  <p class="mb-1">{{ concept_labels.get(row.concept, row.concept) }}: {{ format_money(row.amount, currency_symbol) }}</p>
-  {% endfor %}
-  {% if payment.contract %}
-  <p class="kpi-hint mt-2 mb-3">Capital pendiente: {{ format_money(payment.contract.capital_balance, currency_symbol) }} · Interés pendiente: {{ format_money(payment.contract.interest_balance, currency_symbol) }}</p>
-  {% endif %}
-  {% endif %}
-
-  <h2 class="form-section-title">Firma del cliente</h2>
-  {% if signature %}
-  <img src="/uploads/{{ signature.file_path }}" alt="Firma del cliente" class="item-photo" style="max-height:160px;object-fit:contain;background:#fff">
-  {% else %}
-  <div class="empty-state">Sin firma registrada</div>
-  {% endif %}
-</section>
 {% endblock %}
